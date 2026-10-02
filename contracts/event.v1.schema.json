@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://riskpulse.local/contracts/event.v1.schema.json",
+  "title": "Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "tickers",
+    "first_seen",
+    "last_seen",
+    "signal_count",
+    "source_count",
+    "impact",
+    "sentiment",
+    "confidence",
+    "status"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "event_type": { "type": "string", "minLength": 1 },
+    "tickers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Z.]{1,6}$" }
+    },
+    "first_seen": { "type": "string", "format": "date-time" },
+    "last_seen": { "type": "string", "format": "date-time" },
+    "signal_count": { "type": "integer", "minimum": 1 },
+    "source_count": { "type": "integer", "minimum": 1 },
+    "impact": { "type": "number", "minimum": 1, "maximum": 10 },
+    "sentiment": { "type": "number", "minimum": -1, "maximum": 1 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "status": { "type": "string", "enum": ["open", "closed"] }
+  }
+}

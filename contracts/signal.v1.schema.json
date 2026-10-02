@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://riskpulse.local/contracts/signal.v1.schema.json",
+  "title": "Signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "signal_id",
+    "event_id",
+    "timestamp",
+    "source",
+    "tickers",
+    "sentiment",
+    "event_type",
+    "impact",
+    "confidence",
+    "evidence_span",
+    "market_confirmation",
+    "degraded"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "signal_id": { "type": "string", "format": "uuid" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "source": { "type": "string", "enum": ["news", "social", "filing"] },
+    "source_name": { "type": "string" },
+    "url": { "type": "string" },
+    "tickers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Z.]{1,6}$" }
+    },
+    "sentiment": { "type": "number", "minimum": -1, "maximum": 1 },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "Geopolitical",
+        "Macroeconomic",
+        "Credit Event",
+        "Merger/Acquisition",
+        "Product Launch",
+        "Regulatory Event",
+        "Earnings",
+        "Other"
+      ]
+    },
+    "impact": { "type": "number", "minimum": 1, "maximum": 10 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_span": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "market_confirmation": {
+      "type": "string",
+      "enum": ["confirmed", "unconfirmed", "pending", "not_applicable"]
+    },
+    "degraded": { "type": "boolean" }
+  }
+}

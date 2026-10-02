@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "signal_id": "not-a-uuid",
+  "event_id": "evt-4a91c2d0",
+  "timestamp": "2026-10-02T09:30:00Z",
+  "source": "news",
+  "tickers": [],
+  "sentiment": -3,
+  "event_type": "Rumour",
+  "impact": 12,
+  "confidence": 0.84,
+  "evidence_span": { "text": "" },
+  "degraded": false
+}

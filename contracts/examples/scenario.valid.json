@@ -1,0 +1,7 @@
+{
+  "schema_version": "1",
+  "scenario_id": "geo_high",
+  "name": "Geopolitical shock",
+  "trigger": { "event_type": "Geopolitical", "min_impact": 7, "min_confidence": 0.6 },
+  "shocks": { "equity_pct": -10, "rate_bp": 200, "credit_spread_bp": 150, "fx_pct": -3 }
+}

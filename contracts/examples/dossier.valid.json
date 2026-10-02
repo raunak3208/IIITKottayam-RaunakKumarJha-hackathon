@@ -1,0 +1,17 @@
+{
+  "schema_version": "1",
+  "dossier_id": "dos-0001",
+  "event_id": "evt-4a91c2d0",
+  "created_at": "2026-10-02T09:45:00Z",
+  "status": "complete",
+  "summary": "Placeholder dossier used to test the contract.",
+  "corroboration": { "source_count": 3, "sources": ["news", "social", "filing"] },
+  "analogs": [{ "title": "Example analog event", "date": "2023-03-10", "reaction_pct": -8.4 }],
+  "exposures": [{ "asset_class": "Loans", "exposure": 1200000 }],
+  "stress": { "scenario_id": "credit_high", "value_before": 100000000, "value_after": 93500000, "loss": 6500000 },
+  "counter_evidence": [],
+  "claims": [
+    { "text": "A rating action was reported.", "evidence": [{ "url": "https://example.com/item", "span": "places JPMorgan on negative watch" }] }
+  ],
+  "confidence": 0.78
+}

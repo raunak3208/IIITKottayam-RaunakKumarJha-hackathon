@@ -1,0 +1,16 @@
+{
+  "schema_version": "1",
+  "signal_id": "3f1c2a7e-8b4d-4c1e-9a52-6d0f1b7c9e11",
+  "event_id": "evt-4a91c2d0",
+  "timestamp": "2026-10-02T09:30:00Z",
+  "source": "news",
+  "source_name": "Wire Feed (mock)",
+  "tickers": ["JPM"],
+  "sentiment": -0.62,
+  "event_type": "Credit Event",
+  "impact": 7.5,
+  "confidence": 0.84,
+  "evidence_span": { "text": "Ratings agency places JPMorgan on negative watch" },
+  "market_confirmation": "pending",
+  "degraded": false
+}

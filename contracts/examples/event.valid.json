@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "event_id": "evt-4a91c2d0",
+  "event_type": "Credit Event",
+  "tickers": ["JPM"],
+  "first_seen": "2026-10-02T09:30:00Z",
+  "last_seen": "2026-10-02T09:41:00Z",
+  "signal_count": 12,
+  "source_count": 3,
+  "impact": 7.5,
+  "sentiment": -0.58,
+  "confidence": 0.86,
+  "status": "open"
+}

@@ -1,0 +1,89 @@
+# =========================
+# Environment
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Python / FastAPI
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+*.log
+
+# =========================
+# Node.js / React
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.npm/
+.yarn/
+.pnpm-store/
+
+# React / Vite builds
+dist/
+build/
+.vite/
+
+# =========================
+# IDE / Editors
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+*.bak
+
+# =========================
+# Database / Local data
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# Uploads / Generated files
+# =========================
+uploads/
+outputs/
+temp/
+
+# =========================
+# Secrets / Keys
+# =========================
+*.pem
+*.key
+*.crt
+credentials.json
+service-account.json

@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://riskpulse.local/contracts/dossier.v1.schema.json",
+  "title": "Dossier",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dossier_id",
+    "event_id",
+    "created_at",
+    "status",
+    "summary",
+    "claims",
+    "confidence"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "dossier_id": { "type": "string", "minLength": 1 },
+    "event_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["complete", "partial", "failed"] },
+    "summary": { "type": "string" },
+    "corroboration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_count"],
+      "properties": {
+        "source_count": { "type": "integer", "minimum": 0 },
+        "sources": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "analogs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "date"],
+        "properties": {
+          "title": { "type": "string" },
+          "date": { "type": "string" },
+          "reaction_pct": { "type": "number" }
+        }
+      }
+    },
+    "exposures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["asset_class", "exposure"],
+        "properties": {
+          "asset_class": { "type": "string" },
+          "exposure": { "type": "number" }
+        }
+      }
+    },
+    "stress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenario_id", "value_before", "value_after"],
+      "properties": {
+        "scenario_id": { "type": "string" },
+        "value_before": { "type": "number" },
+        "value_after": { "type": "number" },
+        "loss": { "type": "number" }
+      }
+    },
+    "counter_evidence": { "type": "array", "items": { "type": "string" } },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "evidence"],
+        "properties": {
+          "text": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["span"],
+              "properties": {
+                "url": { "type": "string" },
+                "span": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}
