@@ -1,0 +1,109 @@
+name: riskpulse
+
+x-node-env: &node-env
+  REDIS_URL: redis://redis:6379
+  CONTRACTS_DIR: /contracts
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-riskpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-riskpulse}
+      POSTGRES_DB: ${POSTGRES_DB:-riskpulse}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  gateway:
+    build: ./services/gateway
+    environment:
+      <<: *node-env
+      PORT: 3000
+      QUANT_URL: http://quant:8000
+      DATABASE_URL: postgres://${POSTGRES_USER:-riskpulse}:${POSTGRES_PASSWORD:-riskpulse}@postgres:5432/${POSTGRES_DB:-riskpulse}
+    volumes:
+      - ./contracts:/contracts:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      quant:
+        condition: service_started
+
+  ingestion:
+    build: ./services/ingestion
+    environment:
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
+    ports:
+      - "3001:3001"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  ai:
+    build: ./services/ai
+    environment:
+      REDIS_URL: redis://redis:6379
+      CONTRACTS_DIR: /contracts
+      ALIAS_TABLE: /data/universe/sp100_alias_table.json
+      HF_HOME: /models
+    volumes:
+      - ./contracts:/contracts:ro
+      - ./data/universe:/data/universe:ro
+      - hfcache:/models
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  quant:
+    build: ./services/quant
+    environment:
+      PORTFOLIO_PATH: /data/portfolio/positions.csv
+    volumes:
+      - ./data/portfolio:/data/portfolio:ro
+    ports:
+      - "8001:8000"
+
+  dashboard:
+    build: ./apps/dashboard
+    environment:
+      GATEWAY_URL: http://gateway:3000
+    volumes:
+      - ./apps/dashboard/src:/app/src
+    ports:
+      - "5173:5173"
+    depends_on:
+      - gateway
+
+volumes:
+  pgdata:
+  redisdata:
+  hfcache:

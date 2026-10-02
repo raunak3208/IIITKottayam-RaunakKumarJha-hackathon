@@ -1,0 +1,13 @@
+{
+  "name": "riskpulse",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "services/gateway",
+    "services/ingestion",
+    "apps/dashboard"
+  ],
+  "scripts": {
+    "validate:contracts": "node scripts/validateContracts.js"
+  }
+}
