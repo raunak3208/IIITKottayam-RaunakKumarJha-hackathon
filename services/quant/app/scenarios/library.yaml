@@ -1,0 +1,23 @@
+- schema_version: "1"
+  scenario_id: geo_high
+  name: Geopolitical shock
+  trigger: { event_type: Geopolitical, min_impact: 7, min_confidence: 0.6 }
+  shocks: { equity_pct: -10, rate_bp: 200, credit_spread_bp: 150, fx_pct: -3 }
+
+- schema_version: "1"
+  scenario_id: macro_high
+  name: Macroeconomic rate shock
+  trigger: { event_type: Macroeconomic, min_impact: 7, min_confidence: 0.6 }
+  shocks: { equity_pct: -6, rate_bp: 150, credit_spread_bp: 80, fx_pct: -2 }
+
+- schema_version: "1"
+  scenario_id: credit_high
+  name: Credit event
+  trigger: { event_type: Credit Event, min_impact: 7, min_confidence: 0.6 }
+  shocks: { equity_pct: -8, rate_bp: 50, credit_spread_bp: 250, fx_pct: 0 }
+
+- schema_version: "1"
+  scenario_id: regulatory_high
+  name: Regulatory action
+  trigger: { event_type: Regulatory Event, min_impact: 7, min_confidence: 0.6 }
+  shocks: { equity_pct: -5, rate_bp: 0, credit_spread_bp: 60, fx_pct: 0 }
