@@ -1,4 +1,5 @@
 import hashlib
+import json
 import threading
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -9,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from app import config
+from app.agents import adapter
 from app.pipeline import consumer
 from app.pipeline.analyze import Engine
 
@@ -40,7 +42,52 @@ def health(response: Response):
         redis_ok = False
     ok = redis_ok and engine.ready
     response.status_code = 200 if ok else 503
-    return {"status": "ok" if ok else "degraded", "redis": redis_ok, "models_ready": engine.ready}
+    return {
+        "status": "ok" if ok else "degraded",
+        "redis": redis_ok,
+        "models_ready": engine.ready,
+        "llm": engine.llm.status(),
+    }
+
+
+class ChaosRequest(BaseModel):
+    llm_down: bool
+
+
+class InvestigateRequest(BaseModel):
+    event_id: str
+
+
+@app.get("/v1/chaos")
+def get_chaos():
+    return {"llm_down": engine.llm.forced_down}
+
+
+@app.post("/v1/chaos")
+def set_chaos(request: ChaosRequest):
+    engine.llm.forced_down = request.llm_down
+    return {"llm_down": engine.llm.forced_down}
+
+
+@app.post("/v1/investigate")
+def investigate(request: InvestigateRequest):
+    if not engine.ready:
+        raise HTTPException(503, "models are still loading")
+    key = f"dossier:{request.event_id}"
+    cached = engine.redis.get(key)
+    if cached:
+        return json.loads(cached)
+    try:
+        dossier = adapter.investigate(request.event_id, engine.events, engine.tools)
+    except adapter.EventNotFound:
+        raise HTTPException(404, "unknown event")
+    engine.redis.set(key, json.dumps(dossier), ex=600)
+    return dossier
+
+
+@app.get("/v1/stats")
+def stats():
+    return engine.stats()
 
 
 @app.post("/v1/analyze")
@@ -53,7 +100,7 @@ def analyze(request: AnalyzeRequest):
         "source": request.source,
         "timestamp": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
     }
-    signal = engine.analyze(item)
+    signal = engine.analyze(item, persist=False)
     if signal is None:
         raise HTTPException(422, "no market-relevant content found")
     return signal

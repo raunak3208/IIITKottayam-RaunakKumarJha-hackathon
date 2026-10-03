@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import joblib
 from transformers import pipeline
 
 LABELS = {
@@ -12,9 +15,10 @@ LABELS = {
 }
 
 MIN_CONFIDENCE = 0.30
+HEAD_FILE = "event_head.joblib"
 
 
-class EventClassifier:
+class ZeroShotClassifier:
     def __init__(self, name):
         self.pipe = pipeline("zero-shot-classification", model=name)
 
@@ -28,3 +32,17 @@ class EventClassifier:
         if score < MIN_CONFIDENCE:
             return "Other", score
         return label, score
+
+
+class EventClassifier:
+    def __init__(self, zero_shot_name, head_path):
+        path = Path(head_path)
+        self.head = joblib.load(path) if path.exists() else None
+        self.zero_shot = None if self.head else ZeroShotClassifier(zero_shot_name)
+
+    def classify(self, text, embedding):
+        if self.head is None:
+            return self.zero_shot.classify(text)
+        probs = self.head.predict_proba(embedding.reshape(1, -1))[0]
+        best = int(probs.argmax())
+        return str(self.head.classes_[best]), float(probs[best])
