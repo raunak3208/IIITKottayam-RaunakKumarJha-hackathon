@@ -1,0 +1,23 @@
+{
+  "edges": [
+    ["JPM", "GS", 0.6],
+    ["JPM", "sector:Industrials", 0.4],
+    ["sector:Financials", "sector:Industrials", 0.4],
+    ["sector:Financials", "sector:Technology", 0.3],
+    ["sector:Financials", "sector:Energy", 0.3],
+    ["sector:Energy", "sector:Industrials", 0.4],
+    ["sector:Energy", "sector:Utilities", 0.4],
+    ["sector:Energy", "sector:Consumer", 0.3],
+    ["sector:Technology", "sector:Industrials", 0.3],
+    ["AAPL", "NVDA", 0.5],
+    ["MSFT", "NVDA", 0.5],
+    ["XOM", "CVX", 0.7],
+    ["WMT", "sector:Consumer", 0.7],
+    ["JNJ", "PFE", 0.5]
+  ],
+  "event_epicenters": {
+    "Credit Event": ["sector:Financials"],
+    "Geopolitical": ["sector:Energy"],
+    "Macroeconomic": ["sector:Financials"]
+  }
+}

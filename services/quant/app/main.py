@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.portfolio.loader import load_positions
 from app.stress.engine import exposure, get_scenario, run_stress, scenarios
@@ -9,6 +9,10 @@ app = FastAPI(title="riskpulse-quant")
 
 class StressRequest(BaseModel):
     scenario_id: str
+    impact: float | None = Field(default=None, ge=1, le=10)
+    confidence: float | None = Field(default=None, ge=0, le=1)
+    tickers: list[str] = []
+    simulations: int = Field(default=2000, ge=100, le=20000)
 
 
 @app.get("/health")
@@ -40,6 +44,8 @@ def stress(request: StressRequest):
     if scenario is None:
         raise HTTPException(404, "unknown scenario")
     try:
-        return run_stress(scenario)
+        return run_stress(
+            scenario, request.impact, request.confidence, request.tickers, request.simulations
+        )
     except (FileNotFoundError, ValueError) as err:
         raise HTTPException(503, str(err))

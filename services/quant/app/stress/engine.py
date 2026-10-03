@@ -1,13 +1,23 @@
 from functools import cache
 from pathlib import Path
 
+import numpy as np
 import yaml
 
+from app.contagion.graph import (
+    amplifier,
+    build_graph,
+    epicenter_nodes,
+    load_links,
+    propagate,
+)
 from app.portfolio.loader import load_positions
+from app.simulation.monte_carlo import sample_shocks, tail_risk
 
 LIBRARY = Path(__file__).parent.parent / "scenarios" / "library.yaml"
 BASE_CURRENCY = "USD"
 PD_PER_100BP = 1.0
+MIN_SCALE, MAX_SCALE = 0.5, 1.5
 
 
 @cache
@@ -19,27 +29,35 @@ def get_scenario(scenario_id):
     return next((s for s in scenarios() if s["scenario_id"] == scenario_id), None)
 
 
-def reprice(position, shocks):
+def shock_scale(scenario, impact, confidence):
+    if impact is None or confidence is None:
+        return 1.0
+    scale = (impact / scenario["trigger"]["min_impact"]) * (0.5 + 0.5 * confidence)
+    return float(min(MAX_SCALE, max(MIN_SCALE, scale)))
+
+
+def reprice(position, shocks, amplifier=1.0):
     kind = position["asset_class"]
     value = position["market_value"]
+    equity = shocks["equity_pct"] * amplifier
+    spread = shocks["credit_spread_bp"] * amplifier
 
     if kind == "equity":
-        after = value * (1 + position["beta"] * shocks["equity_pct"] / 100)
+        after = value * (1 + position["beta"] * equity / 100)
     elif kind == "bond":
-        dy = (shocks["rate_bp"] + position["spread_sensitivity"] * shocks["credit_spread_bp"]) / 10000
+        dy = (shocks["rate_bp"] + position["spread_sensitivity"] * spread) / 10000
         after = value * (1 - position["duration"] * dy + 0.5 * position["convexity"] * dy**2)
     elif kind == "loan":
-        spread = shocks["credit_spread_bp"]
-        stressed_pd = min(1.0, position["pd"] * (1 + PD_PER_100BP * spread / 100))
+        stressed_pd = np.minimum(1.0, position["pd"] * (1 + PD_PER_100BP * spread / 100))
         after = value * (1 - position["duration"] * spread / 10000)
-        after -= value * position["lgd"] * (stressed_pd - position["pd"])
+        after = after - value * position["lgd"] * (stressed_pd - position["pd"])
     elif kind == "derivative":
-        after = value + position["delta"] * position["notional"] * shocks["equity_pct"] / 100
+        after = value + position["delta"] * position["notional"] * equity / 100
     else:
         after = value
 
     if position["currency"] != BASE_CURRENCY:
-        after *= 1 + shocks["fx_pct"] / 100
+        after = after * (1 + shocks["fx_pct"] / 100)
     return after
 
 
@@ -54,19 +72,40 @@ def exposure(positions):
     ]
 
 
-def run_stress(scenario):
+def _total_after(positions, shocks, amplifiers):
+    return sum(reprice(p, shocks, a) for p, a in zip(positions, amplifiers))
+
+
+def run_stress(scenario, impact=None, confidence=None, tickers=None, simulations=2000, seed=42):
     positions = load_positions()
-    before = {}
-    after = {}
-    for p in positions:
+    links = load_links()
+    scale = shock_scale(scenario, impact, confidence)
+    shocks = {k: v * scale for k, v in scenario["shocks"].items()}
+
+    graph = build_graph(positions, links["edges"])
+    epicenter = epicenter_nodes(
+        positions, tickers or [], scenario["trigger"]["event_type"], links["event_epicenters"]
+    )
+    reach = propagate(graph, epicenter)
+    amplifiers = [amplifier(p, reach) for p in positions]
+
+    before, after = {}, {}
+    for p, a in zip(positions, amplifiers):
         kind = p["asset_class"]
         before[kind] = before.get(kind, 0.0) + p["market_value"]
-        after[kind] = after.get(kind, 0.0) + reprice(p, scenario["shocks"])
+        after[kind] = after.get(kind, 0.0) + float(reprice(p, shocks, a))
 
     total_before = sum(before.values())
     total_after = sum(after.values())
+    plain_after = float(_total_after(positions, shocks, [1.0] * len(positions)))
+
+    draws = sample_shocks(shocks, simulations, seed)
+    pnl = _total_after(positions, draws, amplifiers) - total_before
+
     return {
         "scenario": scenario,
+        "scale": round(scale, 3),
+        "shocks_applied": {k: round(v, 2) for k, v in shocks.items()},
         "value_before": round(total_before, 2),
         "value_after": round(total_after, 2),
         "loss": round(total_after - total_before, 2),
@@ -81,4 +120,15 @@ def run_stress(scenario):
             for kind in sorted(before, key=lambda k: -before[k])
         ],
         "exposure": exposure(positions),
+        "contagion": {
+            "epicenter": epicenter,
+            "affected": [
+                {"node": n, "exposure": round(v, 3)}
+                for n, v in sorted(reach.items(), key=lambda kv: -kv[1])
+                if n not in epicenter
+            ][:8],
+            "positions_amplified": sum(1 for a in amplifiers if a > 1.0),
+            "extra_loss": round(total_after - plain_after, 2),
+        },
+        "risk": {"simulations": simulations, **tail_risk(pnl)},
     }

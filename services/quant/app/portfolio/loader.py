@@ -34,5 +34,7 @@ def load_positions():
     if "currency" not in df:
         df["currency"] = "USD"
     df["currency"] = df["currency"].fillna("USD")
+    for column in ("ticker", "sector"):
+        df[column] = df[column].fillna("") if column in df else ""
     df["asset_class"] = df["asset_class"].str.lower()
     return df.to_dict("records")
