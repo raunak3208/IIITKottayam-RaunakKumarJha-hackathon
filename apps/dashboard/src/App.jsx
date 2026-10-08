@@ -1,15 +1,19 @@
-import React from 'react';
-import SignalFeed from './components/SignalFeed.jsx';
+import React, { useState } from 'react';
+import EvaluationPanel from './components/EvaluationPanel.jsx';
+import EventTimeline from './components/EventTimeline.jsx';
+import LivePage from './components/LivePage.jsx';
+import ReplayPanel from './components/ReplayPanel.jsx';
+import ReviewPanel from './components/ReviewPanel.jsx';
 import StressPanel from './components/StressPanel.jsx';
+import SystemPanel from './components/SystemPanel.jsx';
 import { useLiveFeed } from './api/useLiveFeed.js';
 
-export default function App() {
-  const { signals, stress, setStress, status } = useLiveFeed();
+const TABS = ['Live', 'Events', 'Stress', 'Review', 'Replay', 'System', 'Evaluation'];
 
-  const highImpact = signals.filter((s) => s.impact >= 7).length;
-  const avgSentiment = signals.length
-    ? signals.reduce((sum, s) => sum + s.sentiment, 0) / signals.length
-    : 0;
+export default function App() {
+  const [tab, setTab] = useState('Live');
+  const [filters, setFilters] = useState({ ticker: '', eventType: '', minImpact: '' });
+  const { signals, stress, setStress, status } = useLiveFeed(filters);
 
   return (
     <main>
@@ -18,27 +22,32 @@ export default function App() {
         <span className={`status ${status}`}>{status}</span>
       </header>
 
-      <section className="summary" aria-label="Summary">
-        <div>
-          <strong>{signals.length}</strong>
-          <span>signals in view</span>
-        </div>
-        <div>
-          <strong>{highImpact}</strong>
-          <span>with impact 7 or above</span>
-        </div>
-        <div>
-          <strong>{avgSentiment.toFixed(2)}</strong>
-          <span>average sentiment</span>
-        </div>
-      </section>
+      <nav className="tabs" role="tablist">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            className={tab === t ? 'tab active' : 'tab'}
+            onClick={() => setTab(t)}
+          >
+            {t}
+          </button>
+        ))}
+      </nav>
 
-      <StressPanel stress={stress} onRun={setStress} />
-
-      <section aria-label="Signal feed" className="feed">
-        <h2>Signal feed</h2>
-        <SignalFeed signals={signals} />
-      </section>
+      {tab === 'Live' && <LivePage signals={signals} filters={filters} setFilters={setFilters} />}
+      {tab === 'Events' && (
+        <section aria-label="Events">
+          <h2>Events</h2>
+          <EventTimeline />
+        </section>
+      )}
+      {tab === 'Stress' && <StressPanel stress={stress} onRun={setStress} />}
+      {tab === 'Review' && <ReviewPanel />}
+      {tab === 'Replay' && <ReplayPanel />}
+      {tab === 'System' && <SystemPanel />}
+      {tab === 'Evaluation' && <EvaluationPanel />}
     </main>
   );
 }

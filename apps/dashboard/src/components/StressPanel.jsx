@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react';
-
-const money = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  notation: 'compact',
-  maximumFractionDigits: 2,
-});
-
-const signed = (value) => `${value > 0 ? '+' : ''}${money.format(value)}`;
-const bp = (value) => `${value > 0 ? '+' : ''}${value} bp`;
-const pct = (value) => `${value > 0 ? '+' : ''}${value}%`;
+import { get, post } from '../api/http.js';
+import Contagion from './stress/Contagion.jsx';
+import ReverseStress from './stress/ReverseStress.jsx';
+import Tornado from './stress/Tornado.jsx';
+import WhatIf from './stress/WhatIf.jsx';
+import { bp, money, pct, signed } from './stress/format.js';
 
 function Shocks({ shocks }) {
   const items = [
@@ -31,7 +26,9 @@ function Shocks({ shocks }) {
 }
 
 function Trigger({ trigger }) {
-  if (trigger.manual) return <p className="muted">Started manually.</p>;
+  if (trigger.manual) {
+    return <p className="muted">{trigger.what_if ? 'Started from the what-if controls.' : 'Started manually.'}</p>;
+  }
   return (
     <div className="trigger">
       <p>
@@ -89,38 +86,58 @@ function ClassTable({ run, exposure }) {
   );
 }
 
+const describe = (run) =>
+  `${new Date(run.timestamp).toLocaleTimeString([], { hour12: false })}  ${run.scenario.name}  (${
+    run.trigger.manual ? (run.trigger.what_if ? 'what-if' : 'manual') : 'event'
+  })`;
+
 export default function StressPanel({ stress, onRun }) {
   const [scenarios, setScenarios] = useState([]);
   const [selected, setSelected] = useState('');
   const [portfolio, setPortfolio] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [shown, setShown] = useState(null);
+  const [tickerText, setTickerText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  const tickers = tickerText.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean);
+  const scenario = scenarios.find((s) => s.scenario_id === selected);
+
+  const loadHistory = () =>
+    get('/v1/stress?limit=15')
+      .then((body) => setHistory(body.items))
+      .catch(() => {});
+
   useEffect(() => {
-    fetch('/v1/scenarios')
-      .then((res) => res.json())
+    get('/v1/scenarios')
       .then((body) => {
         setScenarios(body.items);
         setSelected(body.items[0]?.scenario_id ?? '');
       })
-      .catch(() => {});
-    fetch('/v1/portfolio')
-      .then((res) => res.json())
-      .then(setPortfolio)
-      .catch(() => {});
+      .catch((err) => setError(err.message));
+    get('/v1/portfolio').then(setPortfolio).catch((err) => setError(err.message));
+    loadHistory();
   }, []);
 
-  async function run() {
+  useEffect(() => {
+    if (stress) {
+      setShown(stress);
+      loadHistory();
+    }
+  }, [stress]);
+
+  function accept(run) {
+    onRun(run);
+    setShown(run);
+    loadHistory();
+  }
+
+  async function runManual() {
     setBusy(true);
     setError('');
     try {
-      const res = await fetch('/v1/stress/run', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ scenario_id: selected }),
-      });
-      if (!res.ok) throw new Error(`request failed (${res.status})`);
-      onRun(await res.json());
+      accept(await post('/v1/stress/run', { scenario_id: selected, tickers }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -140,54 +157,104 @@ export default function StressPanel({ stress, onRun }) {
               </option>
             ))}
           </select>
-          <button onClick={run} disabled={busy || !selected}>
+          <input
+            placeholder="Affected tickers, e.g. JPM"
+            value={tickerText}
+            onChange={(e) => setTickerText(e.target.value)}
+            aria-label="Affected tickers"
+          />
+          <button onClick={runManual} disabled={busy || !selected}>
             {busy ? 'Running' : 'Run stress test'}
           </button>
         </div>
       </div>
       {error && <p className="neg-text">{error}</p>}
 
-      {stress ? (
+      {history.length > 0 && (
+        <div className="controls history">
+          <span className="muted">Earlier runs</span>
+          <select
+            value={shown?.run_id ?? ''}
+            onChange={(e) => setShown(history.find((r) => r.run_id === e.target.value))}
+            aria-label="Earlier stress runs"
+          >
+            {history.map((r) => (
+              <option key={r.run_id} value={r.run_id}>
+                {describe(r)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {shown ? (
         <>
           <div className="values">
             <div>
               <span>Portfolio before</span>
-              <strong>{money.format(stress.value_before)}</strong>
+              <strong>{money.format(shown.value_before)}</strong>
             </div>
             <div>
               <span>Portfolio after</span>
-              <strong>{money.format(stress.value_after)}</strong>
+              <strong>{money.format(shown.value_after)}</strong>
             </div>
+            {shown.risk && (
+              <div>
+                <span>Value at risk (95%)</span>
+                <strong>{money.format(-shown.risk.var_95)}</strong>
+              </div>
+            )}
+            {shown.risk && (
+              <div>
+                <span>Expected shortfall (95%)</span>
+                <strong>{money.format(-shown.risk.es_95)}</strong>
+              </div>
+            )}
             <div>
               <span>Estimated loss</span>
-              <strong className={stress.loss < 0 ? 'neg-text' : 'pos-text'}>
-                {signed(stress.loss)} ({pct(stress.loss_pct)})
+              <strong className={shown.loss < 0 ? 'neg-text' : 'pos-text'}>
+                {signed(shown.loss)} ({pct(shown.loss_pct)})
               </strong>
             </div>
           </div>
           <div className="scenario">
-            <h3>{stress.scenario.name}</h3>
-            <Shocks shocks={stress.scenario.shocks} />
-            <Trigger trigger={stress.trigger} />
+            <h3>{shown.scenario.name}</h3>
+            <Shocks shocks={shown.shocks_applied ?? shown.scenario.shocks} />
+            {shown.scale !== undefined && shown.scale !== 1 && (
+              <p className="muted">
+                Applied at {shown.scale}x of the scenario shocks, scaled by event impact and confidence.
+              </p>
+            )}
+            <Trigger trigger={shown.trigger} />
           </div>
-          <ClassTable run={stress} />
+          <ClassTable run={shown} />
+          <h3 className="sub">Contagion</h3>
+          <Contagion contagion={shown.contagion} />
         </>
       ) : (
         <>
           <p className="muted">
-            No stress test has run yet. One starts automatically when an event meets a scenario trigger,
-            or you can run one manually.
+            No stress test has run yet. One starts automatically when a well-corroborated event meets a scenario
+            trigger, or you can run one manually.
           </p>
           {portfolio && (
             <>
               <p>
-                Portfolio value <strong>{money.format(portfolio.total_value)}</strong> across{' '}
-                {portfolio.positions} positions.
+                Portfolio value <strong>{money.format(portfolio.total_value)}</strong> across {portfolio.positions}{' '}
+                positions.
               </p>
               <ClassTable exposure={portfolio.exposure} />
             </>
           )}
         </>
+      )}
+
+      {scenario && (
+        <div className="tools">
+          <WhatIf scenario={scenario} tickers={tickers} onResult={accept} />
+          <Tornado scenarioId={scenario.scenario_id} tickers={tickers} />
+          <ReverseStress scenarioId={scenario.scenario_id} tickers={tickers} />
+        </div>
       )}
     </section>
   );

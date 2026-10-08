@@ -1,5 +1,12 @@
 import React from 'react';
 
+const MARKET_LABEL = {
+  confirmed: 'Confirmed',
+  unconfirmed: 'Unconfirmed',
+  pending: 'Pending',
+  not_applicable: '-',
+};
+
 const time = (iso) => new Date(iso).toLocaleTimeString([], { hour12: false });
 
 function SentimentBar({ value }) {
@@ -29,6 +36,7 @@ export default function SignalFeed({ signals }) {
             <th>Sentiment</th>
             <th className="num">Impact</th>
             <th className="num">Confidence</th>
+            <th>Market</th>
             <th>Source</th>
             <th>Evidence</th>
           </tr>
@@ -42,6 +50,7 @@ export default function SignalFeed({ signals }) {
               <td><SentimentBar value={s.sentiment} /></td>
               <td className="num">{s.impact.toFixed(1)}</td>
               <td className="num">{Math.round(s.confidence * 100)}%</td>
+              <td className={`market ${s.market_confirmation}`}>{MARKET_LABEL[s.market_confirmation]}</td>
               <td>{s.source_name ?? s.source}</td>
               <td className="evidence">{s.evidence_span.text}</td>
             </tr>

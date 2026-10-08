@@ -346,3 +346,300 @@ button:disabled {
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+.market.confirmed {
+  color: var(--pos);
+}
+
+.market.unconfirmed {
+  color: var(--neg);
+}
+
+.dossier {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.dossier h3,
+.dossier h4 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.dossier h4 {
+  margin-top: 14px;
+  font-size: 0.9rem;
+}
+
+.dossier ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+input {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.filters,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters {
+  margin-bottom: 14px;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+button.danger {
+  background: var(--neg);
+  border-color: var(--neg);
+}
+
+.history {
+  margin-bottom: 14px;
+}
+
+.sub {
+  margin: 20px 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tools,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.card,
+.tool {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.card h3,
+.tool h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.card p,
+.tool p {
+  margin: 0 0 6px;
+}
+
+.pill {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.pill.ok {
+  color: var(--pos);
+  border-color: var(--pos);
+}
+
+.pill.degraded,
+.pill.unreachable {
+  color: var(--neg);
+  border-color: var(--neg);
+}
+
+.pill.busy {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.facts {
+  margin: 0;
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+ul.plain {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.plain > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+ul.small {
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.slider {
+  display: grid;
+  grid-template-columns: 110px 1fr 80px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.slider output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tornado-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 150px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.tornado-bars {
+  position: relative;
+  height: 14px;
+}
+
+.tornado-bars::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+
+.tornado-bar {
+  position: absolute;
+  top: 2px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.tornado-bar.neg {
+  background: var(--neg);
+}
+
+.tornado-bar.pos {
+  background: var(--pos);
+}
+
+.contagion ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contagion li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
+}
+
+.contagion li > span:first-child {
+  min-width: 150px;
+}
+
+.review-item {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.review-item p {
+  margin: 0 0 6px;
+}
+
+progress {
+  width: 100%;
+}
+
+.log {
+  max-height: 180px;
+  margin: 10px 0 0;
+  padding: 8px;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+}
+
+.report {
+  width: 100%;
+  height: 900px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
