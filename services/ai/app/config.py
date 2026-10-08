@@ -44,3 +44,9 @@ ESCALATE_IMPACT = float(os.getenv("ESCALATE_IMPACT", "7.0"))
 ABSTAIN_FLOOR = 0.5
 ABSTAIN_PENALTY = 0.8
 REVIEW_STREAM = "review.queue"
+
+LLM_CUTOFF = os.getenv("LLM_CUTOFF", "")
+LLM_PRICE_IN_PER_M = float(os.getenv("LLM_PRICE_IN_PER_M", "0"))
+LLM_PRICE_OUT_PER_M = float(os.getenv("LLM_PRICE_OUT_PER_M", "0"))
+RETRIEVAL_QUERIES_PATH = os.getenv("RETRIEVAL_QUERIES_PATH", "../../data/analogs/retrieval_queries.jsonl")
+ADVERSARIAL_PATH = os.getenv("ADVERSARIAL_PATH", "../../data/gold/adversarial_suite.jsonl")

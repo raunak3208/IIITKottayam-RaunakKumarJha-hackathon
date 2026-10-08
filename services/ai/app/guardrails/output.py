@@ -22,10 +22,15 @@ def parse_adjudication(raw):
     if not isinstance(quote, str) or not MIN_QUOTE <= len(quote.strip()) <= MAX_QUOTE:
         raise ValueError("evidence_quote missing or out of range")
 
+    try:
+        sentiment, confidence = float(data["sentiment"]), float(data["confidence"])
+    except (KeyError, TypeError, ValueError) as err:
+        raise ValueError("sentiment or confidence missing") from err
+
     return {
         "event_type": event_type,
-        "sentiment": min(1.0, max(-1.0, float(data["sentiment"]))),
-        "confidence": min(1.0, max(0.0, float(data["confidence"]))),
+        "sentiment": min(1.0, max(-1.0, sentiment)),
+        "confidence": min(1.0, max(0.0, confidence)),
         "evidence_quote": quote.strip(),
         "rationale": str(data.get("rationale", ""))[:300],
     }

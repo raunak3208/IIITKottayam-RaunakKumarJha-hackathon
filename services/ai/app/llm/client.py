@@ -25,8 +25,9 @@ class LLMError(Exception):
 
 
 class LLMClient:
-    def __init__(self, breaker=None):
+    def __init__(self, breaker=None, recorder=None):
         self.breaker = breaker or CircuitBreaker()
+        self.recorder = recorder
         self.forced_down = False
         self._lock = threading.Lock()
         self._last_call = 0.0
@@ -51,11 +52,15 @@ class LLMClient:
             raise LLMUnavailable("circuit breaker is open")
 
         try:
-            text = self._request_with_retries(system, user, temperature, max_tokens)
+            text, tokens_in, tokens_out = self._request_with_retries(
+                system, user, temperature, max_tokens
+            )
         except Exception as err:
             self.breaker.failure()
             raise LLMError(str(err)) from err
         self.breaker.success()
+        if self.recorder:
+            self.recorder(tokens_in, tokens_out)
         return text
 
     def _throttle(self):
@@ -106,7 +111,10 @@ class LLMClient:
                 timeout=config.LLM_TIMEOUT_SEC,
             )
             response.raise_for_status()
-            return "".join(b.get("text", "") for b in response.json()["content"])
+            body = response.json()
+            usage = body.get("usage") or {}
+            text = "".join(b.get("text", "") for b in body["content"])
+            return text, usage.get("input_tokens", 0), usage.get("output_tokens", 0)
 
         if config.LLM_JSON_MODE:
             extra["response_format"] = {"type": "json_object"}
@@ -126,4 +134,7 @@ class LLMClient:
             timeout=config.LLM_TIMEOUT_SEC,
         )
         response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+        body = response.json()
+        usage = body.get("usage") or {}
+        text = body["choices"][0]["message"]["content"]
+        return text, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)

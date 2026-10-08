@@ -45,13 +45,18 @@ def rrf(rankings, k=60):
 
 class AnalogIndex:
     def __init__(self, path, embedder):
-        file = Path(path)
-        lines = file.read_text().splitlines() if file.exists() else []
+        self.path = Path(path)
+        self.embedder = embedder
+        self.reload()
+
+    def reload(self):
+        lines = self.path.read_text().splitlines() if self.path.exists() else []
         self.events = [json.loads(line) for line in lines if line.strip()]
         docs = [f"{e['title']}. {e['summary']}" for e in self.events]
-        self.embedder = embedder
         self.bm25 = BM25(docs)
-        self.vectors = embedder.encode_many(docs) if docs else np.zeros((0, 1), dtype=np.float32)
+        self.vectors = (
+            self.embedder.encode_many(docs) if docs else np.zeros((0, 1), dtype=np.float32)
+        )
 
     def search(self, query, k=3, mode="hybrid", embedding=None):
         if not self.events:

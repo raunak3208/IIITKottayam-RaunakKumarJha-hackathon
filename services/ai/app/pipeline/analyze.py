@@ -1,10 +1,12 @@
 import hashlib
 import json
 import re
+import time
 import uuid
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import redis
 
 from app import config
@@ -17,6 +19,7 @@ from app.llm.client import LLMClient
 from app.models.embeddings import Embedder
 from app.models.event_classifier import HEAD_FILE, EventClassifier
 from app.models.sentiment import SentimentModel
+from app.monitoring.drift import DriftMonitor
 from app.pipeline.clustering import EventStore
 from app.pipeline.entity_linking import EntityLinker
 from app.retrieval.analog_index import AnalogIndex
@@ -30,7 +33,9 @@ CONFIDENCE_FACTOR = {"confirmed": 1.05, "unconfirmed": 0.9}
 COUNTERS = [
     "cache_hit", "cache_miss", "cache_flip", "events_new", "events_joined",
     "escalated", "adjudicated", "abstained", "llm_error", "degraded", "injection_blocked",
+    "signals_emitted", "llm_calls", "llm_tokens_in", "llm_tokens_out",
 ]
+TIERS = ["cache", "tier1", "escalated", "degraded"]
 
 
 class Engine:
@@ -38,7 +43,8 @@ class Engine:
         self.ready = False
         self.validator = validator("signal")
         self.redis = redis.Redis.from_url(config.REDIS_URL, decode_responses=True)
-        self.llm = LLMClient()
+        self.llm = LLMClient(recorder=self.record_usage)
+        self.drift = DriftMonitor(self.redis)
 
     def load(self):
         artifacts = Path(config.ARTIFACTS_DIR)
@@ -60,14 +66,53 @@ class Engine:
         self.tools = Tools(self.analogs, self.redis)
         self.ready = True
 
-    def count(self, name):
-        self.redis.incr(f"stats:{name}")
+    def reload_artifacts(self):
+        artifacts = Path(config.ARTIFACTS_DIR)
+        calibration = artifacts / "calibration.json"
+        if calibration.exists():
+            self.sentiment.temperature = json.loads(calibration.read_text())["temperature"]
+        self.classifier = EventClassifier(config.EVENT_MODEL, artifacts / HEAD_FILE)
+        self.analogs.reload()
+
+    def count(self, name, amount=1):
+        self.redis.incrby(f"stats:{name}", amount)
+
+    def record_usage(self, tokens_in, tokens_out):
+        self.count("llm_calls")
+        self.count("llm_tokens_in", tokens_in)
+        self.count("llm_tokens_out", tokens_out)
+
+    def record_latency(self, tier, started):
+        pipe = self.redis.pipeline()
+        pipe.lpush(f"latency:{tier}", round((time.perf_counter() - started) * 1000, 1))
+        pipe.ltrim(f"latency:{tier}", 0, 999)
+        pipe.execute()
 
     def stats(self):
         values = {name: int(self.redis.get(f"stats:{name}") or 0) for name in COUNTERS}
         lookups = values["cache_hit"] + values["cache_miss"]
         values["cache_hit_rate"] = round(values["cache_hit"] / lookups, 3) if lookups else 0.0
         values["llm"] = self.llm.status()
+
+        cost = (
+            values["llm_tokens_in"] * config.LLM_PRICE_IN_PER_M
+            + values["llm_tokens_out"] * config.LLM_PRICE_OUT_PER_M
+        ) / 1e6
+        emitted = values["signals_emitted"]
+        values["llm_cost_usd"] = round(cost, 4)
+        values["cost_per_signal_usd"] = round(cost / emitted, 6) if emitted else 0.0
+        values["llm_calls_per_signal"] = round(values["llm_calls"] / emitted, 3) if emitted else 0.0
+
+        latency = {}
+        for tier in TIERS:
+            samples = [float(v) for v in self.redis.lrange(f"latency:{tier}", 0, -1)]
+            if samples:
+                latency[tier] = {
+                    "n": len(samples),
+                    "p50": round(float(np.percentile(samples, 50)), 1),
+                    "p95": round(float(np.percentile(samples, 95)), 1),
+                }
+        values["latency_ms"] = latency
         return values
 
     def evidence(self, text, tickers):
@@ -127,6 +172,15 @@ class Engine:
         )
 
     def analyze(self, item, persist=True):
+        started = time.perf_counter()
+        trace = {"tier": "tier1"}
+        try:
+            return self._analyze(item, persist, trace)
+        finally:
+            if persist:
+                self.record_latency(trace["tier"], started)
+
+    def _analyze(self, item, persist, trace):
         text = item["text"]
         tickers = self.linker.link(text)
         embedding = self.embedder.encode(text)
@@ -134,6 +188,10 @@ class Engine:
         analysis, _ = self.cache.lookup(embedding, tickers, text)
         cached = analysis is not None
         self.count("cache_hit" if cached else "cache_miss")
+        if persist:
+            self.drift.record_cache(cached)
+        if cached:
+            trace["tier"] = "cache"
         if not cached:
             analysis = self.classify(text, embedding)
         if not tickers and analysis["event_type"] not in MARKET_WIDE:
@@ -150,6 +208,7 @@ class Engine:
                 self.count("injection_blocked")
             else:
                 self.count("escalated")
+                trace["tier"] = "escalated"
                 result = self.graph.invoke({"text": text, "tier1": analysis, "tickers": tickers})
                 outcome = result.get("outcome")
                 if outcome == "ok":
@@ -172,6 +231,7 @@ class Engine:
                     state["confidence"] *= config.ABSTAIN_PENALTY
                 else:
                     degraded = True
+                    trace["tier"] = "degraded"
                     self.count("llm_error")
                     self.count("degraded")
 
@@ -214,4 +274,7 @@ class Engine:
             signal["url"] = item["url"]
 
         self.validator.validate(signal)
+        if persist:
+            self.count("signals_emitted")
+            self.drift.record_signal(analysis["sentiment"], state["confidence"])
         return signal

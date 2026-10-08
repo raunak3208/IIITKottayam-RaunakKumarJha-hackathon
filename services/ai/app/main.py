@@ -11,10 +11,12 @@ from pydantic import BaseModel, Field
 
 from app import config
 from app.agents import adapter
+from app.jobs import JobRunner
 from app.pipeline import consumer
 from app.pipeline.analyze import Engine
 
 engine = Engine()
+runner = JobRunner(on_success=lambda name: engine.reload_artifacts() if engine.ready else None)
 client = redis.Redis.from_url(config.REDIS_URL)
 
 
@@ -83,6 +85,29 @@ def investigate(request: InvestigateRequest):
         raise HTTPException(404, "unknown event")
     engine.redis.set(key, json.dumps(dossier), ex=600)
     return dossier
+
+
+@app.get("/v1/jobs")
+def jobs():
+    return {"items": runner.snapshot()}
+
+
+@app.post("/v1/jobs/{name}")
+def start_job(name: str):
+    try:
+        runner.start(name)
+    except KeyError:
+        raise HTTPException(404, "unknown job")
+    except RuntimeError as err:
+        raise HTTPException(409, str(err))
+    return {"started": name}
+
+
+@app.get("/v1/drift")
+def drift():
+    if not engine.ready:
+        raise HTTPException(503, "models are still loading")
+    return engine.drift.report()
 
 
 @app.get("/v1/stats")

@@ -22,7 +22,7 @@ NEGATIONS = {
 UP = {
     "rise", "rises", "rose", "gain", "gains", "gained", "jump", "jumps", "surge", "surges",
     "soar", "soars", "up", "higher", "raise", "raises", "raised", "increase", "increases",
-    "climb", "climbs", "rally", "rallies", "beats", "tops",
+    "climb", "climbs", "rally", "rallies", "beats", "tops", "hike", "hikes", "hiked",
 }
 DOWN = {
     "fall", "falls", "fell", "drop", "drops", "dropped", "decline", "declines", "slump",
