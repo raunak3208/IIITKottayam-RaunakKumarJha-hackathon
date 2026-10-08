@@ -3,7 +3,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
 from app.models.sentiment import softmax
-from eval.metrics import bootstrap_ci, ece, fit_temperature, macro_f1
+from eval.metrics import bootstrap_ci, ece, fit_temperature, macro_f1, reliability_bins
 
 
 def load_phrasebank():
@@ -55,5 +55,7 @@ def evaluate(name, model):
         "ece_before": round(ece(softmax(logits[test]), y[test]), 4),
         "ece_after": round(ece(softmax(logits[test], temperature), y[test]), 4),
         "temperature": round(temperature, 3),
+        "reliability_before": reliability_bins(softmax(logits[test]), y[test]),
+        "reliability_after": reliability_bins(softmax(logits[test], temperature), y[test]),
         "note": NOTES.get(name, ""),
     }

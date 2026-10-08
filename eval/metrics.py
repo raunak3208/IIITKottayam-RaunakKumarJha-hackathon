@@ -34,6 +34,24 @@ def ece(probs, labels, bins=10):
     return float(total)
 
 
+def reliability_bins(probs, labels, bins=10):
+    confidence = probs.max(axis=1)
+    correct = probs.argmax(axis=1) == labels
+    edges = np.linspace(0, 1, bins + 1)
+    out = []
+    for low, high in zip(edges[:-1], edges[1:]):
+        mask = (confidence > low) & (confidence <= high)
+        if mask.any():
+            out.append(
+                {
+                    "confidence": round(float(confidence[mask].mean()), 3),
+                    "accuracy": round(float(correct[mask].mean()), 3),
+                    "n": int(mask.sum()),
+                }
+            )
+    return out
+
+
 def fit_temperature(logits, labels):
     from app.models.sentiment import softmax
 
