@@ -12,12 +12,13 @@ from app.contagion.graph import (
     propagate,
 )
 from app.portfolio.loader import load_positions
-from app.simulation.monte_carlo import sample_shocks, tail_risk
+from app.simulation.monte_carlo import FACTORS, sample_shocks, tail_risk
 
 LIBRARY = Path(__file__).parent.parent / "scenarios" / "library.yaml"
 BASE_CURRENCY = "USD"
 PD_PER_100BP = 1.0
 MIN_SCALE, MAX_SCALE = 0.5, 1.5
+MAX_REVERSE_SCALE = 20.0
 
 
 @cache
@@ -76,11 +77,14 @@ def _total_after(positions, shocks, amplifiers):
     return sum(reprice(p, shocks, a) for p, a in zip(positions, amplifiers))
 
 
-def run_stress(scenario, impact=None, confidence=None, tickers=None, simulations=2000, seed=42):
+def _context(scenario, impact, confidence, tickers, custom_shocks):
     positions = load_positions()
     links = load_links()
-    scale = shock_scale(scenario, impact, confidence)
-    shocks = {k: v * scale for k, v in scenario["shocks"].items()}
+    if custom_shocks:
+        scale, shocks = 1.0, {k: float(custom_shocks[k]) for k in FACTORS}
+    else:
+        scale = shock_scale(scenario, impact, confidence)
+        shocks = {k: v * scale for k, v in scenario["shocks"].items()}
 
     graph = build_graph(positions, links["edges"])
     epicenter = epicenter_nodes(
@@ -88,6 +92,14 @@ def run_stress(scenario, impact=None, confidence=None, tickers=None, simulations
     )
     reach = propagate(graph, epicenter)
     amplifiers = [amplifier(p, reach) for p in positions]
+    return positions, shocks, amplifiers, epicenter, reach, scale
+
+
+def run_stress(scenario, impact=None, confidence=None, tickers=None, simulations=2000, seed=42,
+               custom_shocks=None):
+    positions, shocks, amplifiers, epicenter, reach, scale = _context(
+        scenario, impact, confidence, tickers, custom_shocks
+    )
 
     before, after = {}, {}
     for p, a in zip(positions, amplifiers):
@@ -131,4 +143,57 @@ def run_stress(scenario, impact=None, confidence=None, tickers=None, simulations
             "extra_loss": round(total_after - plain_after, 2),
         },
         "risk": {"simulations": simulations, **tail_risk(pnl)},
+    }
+
+
+def sensitivity(scenario, tickers=None, custom_shocks=None):
+    positions, shocks, amplifiers, *_ = _context(scenario, None, None, tickers, custom_shocks)
+    before = sum(p["market_value"] for p in positions)
+    base = float(_total_after(positions, shocks, amplifiers)) - before
+
+    factors = []
+    for factor in FACTORS:
+        deltas = []
+        for multiplier in (0.5, 1.5):
+            varied = {**shocks, factor: shocks[factor] * multiplier}
+            deltas.append(float(_total_after(positions, varied, amplifiers)) - before - base)
+        factors.append(
+            {
+                "factor": factor,
+                "base_shock": round(shocks[factor], 2),
+                "low_delta": round(deltas[0], 2),
+                "high_delta": round(deltas[1], 2),
+                "swing": round(abs(deltas[1] - deltas[0]), 2),
+            }
+        )
+    factors.sort(key=lambda f: -f["swing"])
+    return {"base_change": round(base, 2), "factors": factors}
+
+
+def reverse(scenario, target_loss_pct, tickers=None):
+    positions, shocks, amplifiers, *_ = _context(scenario, None, None, tickers, None)
+    before = sum(p["market_value"] for p in positions)
+
+    def loss_pct(multiplier):
+        scaled = {k: v * multiplier for k, v in shocks.items()}
+        return (float(_total_after(positions, scaled, amplifiers)) - before) / before * 100
+
+    target = -abs(target_loss_pct)
+    high = MAX_REVERSE_SCALE
+    if loss_pct(high) > target:
+        return {"reachable": False, "max_scale_tested": high, "loss_pct_at_max": round(loss_pct(high), 2)}
+
+    low = 0.0
+    for _ in range(50):
+        mid = (low + high) / 2
+        if loss_pct(mid) > target:
+            low = mid
+        else:
+            high = mid
+    return {
+        "reachable": True,
+        "scale": round(high, 3),
+        "shocks": {k: round(v * high, 2) for k, v in shocks.items()},
+        "loss_pct": round(loss_pct(high), 2),
+        "loss": round(loss_pct(high) / 100 * before, 2),
     }
