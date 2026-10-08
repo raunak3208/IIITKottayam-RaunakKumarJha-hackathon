@@ -5,7 +5,8 @@ export function createQuantClient(baseUrl) {
       ...options,
     });
     if (!res.ok) {
-      const err = new Error(`quant ${path} returned ${res.status}`);
+      const detail = await res.json().catch(() => ({}));
+      const err = new Error(typeof detail.detail === 'string' ? detail.detail : `quant ${path} returned ${res.status}`);
       err.status = res.status;
       throw err;
     }
@@ -15,7 +16,10 @@ export function createQuantClient(baseUrl) {
   return {
     scenarios: () => request('/v1/scenarios'),
     portfolio: () => request('/v1/portfolio'),
-    stress: (scenarioId) =>
-      request('/v1/stress', { method: 'POST', body: JSON.stringify({ scenario_id: scenarioId }) }),
+    stress: (payload) => request('/v1/stress', { method: 'POST', body: JSON.stringify(payload) }),
+    sensitivity: (payload) =>
+      request('/v1/stress/sensitivity', { method: 'POST', body: JSON.stringify(payload) }),
+    reverse: (payload) =>
+      request('/v1/stress/reverse', { method: 'POST', body: JSON.stringify(payload) }),
   };
 }

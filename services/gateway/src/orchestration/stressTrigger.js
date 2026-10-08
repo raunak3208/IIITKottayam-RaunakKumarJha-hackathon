@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { getSourceCount } from '../db/queries/events.js';
 import { insertStressRun } from '../db/queries/stress.js';
 
 const lastRun = new Map();
@@ -13,8 +14,16 @@ function matchScenario(signal) {
   );
 }
 
-export async function runStress(ctx, scenarioId, signal = null) {
-  const result = await ctx.quant.stress(scenarioId);
+export async function runStress(ctx, scenarioId, signal = null, whatIf = null) {
+  const payload = signal
+    ? {
+        scenario_id: scenarioId,
+        impact: signal.impact,
+        confidence: signal.confidence,
+        tickers: signal.tickers,
+      }
+    : { scenario_id: scenarioId, ...(whatIf ?? {}) };
+  const result = await ctx.quant.stress(payload);
   const run = {
     run_id: randomUUID(),
     timestamp: new Date().toISOString(),
@@ -28,7 +37,7 @@ export async function runStress(ctx, scenarioId, signal = null) {
           tickers: signal.tickers,
           evidence: signal.evidence_span.text,
         }
-      : { manual: true },
+      : { manual: true, what_if: Boolean(whatIf?.shocks) },
     ...result,
   };
   await insertStressRun(ctx.pool, run);
@@ -40,7 +49,10 @@ export async function maybeTrigger(ctx, signal) {
   if (!library.length) library = (await ctx.quant.scenarios()).items;
 
   const scenario = matchScenario(signal);
-  if (!scenario) return;
+  if (!scenario || signal.degraded) return;
+
+  const sources = await getSourceCount(ctx.pool, signal.event_id);
+  if (sources < ctx.config.stressMinSources) return;
 
   const now = Date.now();
   const last = lastRun.get(scenario.scenario_id) ?? 0;
