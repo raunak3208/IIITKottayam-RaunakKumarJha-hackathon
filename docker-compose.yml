@@ -4,6 +4,11 @@ x-node-env: &node-env
   REDIS_URL: redis://redis:6379
   CONTRACTS_DIR: /contracts
 
+# All services build from the single root Dockerfile using named targets.
+x-root-build: &root-build
+  context: .
+  dockerfile: Dockerfile
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -35,7 +40,9 @@ services:
       retries: 10
 
   gateway:
-    build: ./services/gateway
+    build:
+      <<: *root-build
+      target: gateway
     environment:
       <<: *node-env
       PORT: 3000
@@ -54,7 +61,9 @@ services:
         condition: service_started
 
   ingestion:
-    build: ./services/ingestion
+    build:
+      <<: *root-build
+      target: ingestion
     environment:
       REDIS_URL: redis://redis:6379
       PORT: 3001
@@ -67,12 +76,18 @@ services:
         condition: service_healthy
 
   ai:
-    build: ./services/ai
+    build:
+      <<: *root-build
+      target: ai
     environment:
       REDIS_URL: redis://redis:6379
       CONTRACTS_DIR: /contracts
       ALIAS_TABLE: /data/universe/sp100_alias_table.json
       HF_HOME: /models
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mistral}
+      LLM_MODEL: ${LLM_MODEL:-mistral-small-latest}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
     volumes:
       - ./contracts:/contracts:ro
       - ./data/universe:/data/universe:ro
@@ -84,7 +99,9 @@ services:
         condition: service_healthy
 
   quant:
-    build: ./services/quant
+    build:
+      <<: *root-build
+      target: quant
     environment:
       PORTFOLIO_PATH: /data/portfolio/positions.csv
     volumes:
@@ -93,7 +110,9 @@ services:
       - "8001:8000"
 
   dashboard:
-    build: ./apps/dashboard
+    build:
+      <<: *root-build
+      target: dashboard
     environment:
       GATEWAY_URL: http://gateway:3000
     volumes:
