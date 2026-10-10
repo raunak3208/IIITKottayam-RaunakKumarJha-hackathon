@@ -20,7 +20,11 @@ Crucially, RiskPulse bridges qualitative NLP intelligence directly to balance-sh
 
 ## 2. Architecture & Tech Stack
 
-### System Architecture Diagram
+### System Architecture
+
+![RiskPulse System Architecture](docs/architecture.png)
+
+### End-to-End Component Flow Diagram
 
 ```mermaid
 flowchart TB
