@@ -1,0 +1,2 @@
+{"id": "g001", "date": "2026-01-15", "source": "news", "text": "Example headline text goes here.", "tickers": ["JPM"], "sentiment_label": "negative", "event_type": "Credit Event", "impact": 7, "labeler": "initials"}
+{"id": "g002", "date": "2026-01-16", "source": "social", "text": "Example post text goes here.", "tickers": ["AAPL"], "sentiment_label": "positive", "event_type": "Product Launch", "impact": 3, "labeler": "initials"}

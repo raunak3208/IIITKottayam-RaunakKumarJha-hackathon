@@ -28,18 +28,17 @@ def step(summary, key, label, fn):
         print(f"{label}: done")
 
 
-def main():
+def main(engine=None):
     RESULTS.mkdir(exist_ok=True)
     summary = {}
 
-    engine = None
-    try:
-        from app.pipeline.analyze import Engine
-
-        engine = Engine()
-        engine.load()
-    except Exception as err:
-        print(f"engine unavailable, engine-based steps will be skipped: {err}")
+    if engine is None:
+        try:
+            from app.pipeline.analyze import Engine
+            engine = Engine()
+            engine.load()
+        except Exception as err:
+            print(f"engine unavailable, engine-based steps will be skipped: {err}")
 
     if engine:
         sentiment_model = engine.sentiment
@@ -58,9 +57,9 @@ def main():
         path.write_text(json.dumps({"temperature": chosen["temperature"], "fit_on": chosen["dataset"]}))
         print(f"saved temperature {chosen['temperature']} to {path}")
 
-    step(summary, "event", "event classification", event_eval.run)
+    step(summary, "event", "event classification", lambda: event_eval.run(engine))
     step(summary, "cache", "semantic cache", cache_eval.run)
-    step(summary, "embeddings", "embedding models", embeddings_eval.run)
+    step(summary, "embeddings", "embedding models", lambda: embeddings_eval.run(engine))
     if engine:
         step(summary, "retrieval", "analog retrieval", lambda: retrieval_eval.run(engine.embedder))
         step(summary, "ablation", "cascade ablation", lambda: ablation_eval.run(engine))

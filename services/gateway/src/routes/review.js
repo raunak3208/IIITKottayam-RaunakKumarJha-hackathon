@@ -89,6 +89,7 @@ export default async function reviewRoutes(app, { redis, config, gold, meta }) {
       await redis.sadd(RESOLVED, `${list}:${id}`);
       return { saved: true, gold: await gold.stats() };
     } catch (err) {
+      req.log.error(err);
       return sendError(reply, err);
     }
   });

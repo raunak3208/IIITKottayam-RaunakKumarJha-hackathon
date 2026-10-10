@@ -1,65 +1,59 @@
 import { useEffect, useRef, useState } from 'react';
-import { get } from './http.js';
 
-const MAX_ITEMS = 200;
+const MAX = 200;
+const matches = (s, f) =>
+  (!f.ticker || s.tickers?.includes(f.ticker)) &&
+  (!f.eventType || s.event_type === f.eventType) &&
+  s.impact >= (Number(f.minImpact) || 0);
 
-const matches = (signal, f) =>
-  (!f.ticker || signal.tickers.includes(f.ticker)) &&
-  (!f.eventType || signal.event_type === f.eventType) &&
-  signal.impact >= (Number(f.minImpact) || 0);
-
-function query(f) {
-  const params = new URLSearchParams({ limit: '100' });
-  if (f.ticker) params.set('ticker', f.ticker);
-  if (f.eventType) params.set('event_type', f.eventType);
-  if (f.minImpact) params.set('min_impact', f.minImpact);
-  return params.toString();
+function qs(f) {
+  const p = new URLSearchParams({ limit: '100' });
+  if (f.ticker) p.set('ticker', f.ticker);
+  if (f.eventType) p.set('event_type', f.eventType);
+  if (f.minImpact) p.set('min_impact', f.minImpact);
+  return p.toString();
 }
 
 export function useLiveFeed(filters) {
   const [signals, setSignals] = useState([]);
   const [stress, setStress] = useState(null);
   const [status, setStatus] = useState('connecting');
-  const filtersRef = useRef(filters);
-  filtersRef.current = filters;
+  const [systemData, setSystemData] = useState(null);
+  const fRef = useRef(filters);
+  fRef.current = filters;
 
   useEffect(() => {
-    let cancelled = false;
-    get(`/v1/signals?${query(filters)}`)
-      .then((body) => {
-        if (!cancelled) setSignals(body.items);
-      })
+    let cancel = false;
+    fetch(`/v1/signals?${qs(filters)}`)
+      .then((r) => r.json())
+      .then((b) => { if (!cancel) setSignals(b.items ?? []); })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancel = true; };
   }, [filters.ticker, filters.eventType, filters.minImpact]);
 
   useEffect(() => {
-    let cancelled = false;
-    get('/v1/stress?limit=1')
-      .then((body) => {
-        if (!cancelled) setStress((prev) => prev ?? body.items[0] ?? null);
-      })
+    let cancel = false;
+    fetch('/v1/stress?limit=1')
+      .then((r) => r.json())
+      .then((b) => { if (!cancel) setStress((p) => p ?? b.items?.[0] ?? null); })
       .catch(() => {});
 
-    const source = new EventSource('/v1/signals/stream');
-    source.onopen = () => setStatus('live');
-    source.onerror = () => setStatus('reconnecting');
-    source.addEventListener('signal', (event) => {
-      const signal = JSON.parse(event.data);
-      if (!matches(signal, filtersRef.current)) return;
-      setSignals((prev) =>
-        [signal, ...prev.filter((s) => s.signal_id !== signal.signal_id)].slice(0, MAX_ITEMS),
-      );
-    });
-    source.addEventListener('stress', (event) => setStress(JSON.parse(event.data)));
+    const pollSystem = () => fetch('/v1/system').then((r) => r.json()).then(setSystemData).catch(() => {});
+    pollSystem();
+    const sysTimer = setInterval(pollSystem, 8000);
 
-    return () => {
-      cancelled = true;
-      source.close();
-    };
+    const es = new EventSource('/v1/signals/stream');
+    es.onopen = () => setStatus('live');
+    es.onerror = () => setStatus('reconnecting');
+    es.addEventListener('signal', (e) => {
+      const sig = JSON.parse(e.data);
+      if (!matches(sig, fRef.current)) return;
+      setSignals((prev) => [sig, ...prev.filter((s) => s.signal_id !== sig.signal_id)].slice(0, MAX));
+    });
+    es.addEventListener('stress', (e) => setStress(JSON.parse(e.data)));
+
+    return () => { cancel = true; es.close(); clearInterval(sysTimer); };
   }, []);
 
-  return { signals, stress, setStress, status };
+  return { signals, stress, setStress, status, systemData };
 }

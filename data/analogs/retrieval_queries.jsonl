@@ -1,0 +1,2 @@
+{"query": "tech acquisition", "expected": ["hist-1"]}
+{"query": "gaming buyout", "expected": ["hist-2"]}

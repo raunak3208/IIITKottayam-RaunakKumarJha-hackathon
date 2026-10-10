@@ -26,7 +26,7 @@ FROM node:20-alpine AS node-base
 FROM python-base AS ai
 WORKDIR /srv
 COPY services/ai/requirements.txt ./
-RUN uv pip install --system --no-cache --index-strategy unsafe-best-match -r requirements.txt
+RUN uv pip install --system --no-cache -r requirements.txt
 COPY services/ai/app ./app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 

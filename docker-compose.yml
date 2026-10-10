@@ -47,9 +47,15 @@ services:
       <<: *node-env
       PORT: 3000
       QUANT_URL: http://quant:8000
-      DATABASE_URL: postgres://${POSTGRES_USER:-riskpulse}:${POSTGRES_PASSWORD:-riskpulse}@postgres:5432/${POSTGRES_DB:-riskpulse}
+      AI_URL: http://ai:8000
+      INGESTION_URL: http://ingestion:3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-riskpulse}:${POSTGRES_PASSWORD:-riskpulse}@postgres:5432/${POSTGRES_DB:-riskpulse}
+      RESULTS_DIR: /srv/eval/results
     volumes:
       - ./contracts:/contracts:ro
+      - ./data:/data
+      - ./eval:/srv/eval
+      - ./services/gateway/src:/app/src
     ports:
       - "3000:3000"
     depends_on:
@@ -71,6 +77,8 @@ services:
       REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
     ports:
       - "3001:3001"
+    volumes:
+      - ./services/ingestion/src:/app/src
     depends_on:
       redis:
         condition: service_healthy
@@ -88,9 +96,13 @@ services:
       LLM_PROVIDER: ${LLM_PROVIDER:-mistral}
       LLM_MODEL: ${LLM_MODEL:-mistral-small-latest}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-riskpulse}:${POSTGRES_PASSWORD:-riskpulse}@postgres:5432/${POSTGRES_DB:-riskpulse}
+      QUANT_URL: http://quant:8000
     volumes:
       - ./contracts:/contracts:ro
-      - ./data/universe:/data/universe:ro
+      - ./data:/data
+      - ./eval:/srv/eval
+      - ./services/ai/app:/srv/app
       - hfcache:/models
     ports:
       - "8000:8000"

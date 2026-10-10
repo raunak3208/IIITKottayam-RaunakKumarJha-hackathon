@@ -12,7 +12,7 @@ MODELS = {
 }
 
 
-def run():
+def run(engine=None):
     path = Path(config.TRICKY_PAIRS_PATH)
     if not path.exists():
         print(f"embeddings eval skipped: {path} not found")
@@ -22,7 +22,11 @@ def run():
     same = [1 if p["same"] else 0 for p in pairs]
     out = {"pairs": len(pairs)}
     for name, model in MODELS.items():
-        embedder = Embedder(model)
+        if engine and model == config.EMBEDDING_MODEL:
+            embedder = engine.embedder
+        else:
+            embedder = Embedder(model)
+            
         a = embedder.encode_many([p["a"] for p in pairs])
         b = embedder.encode_many([p["b"] for p in pairs])
         sims = (a * b).sum(axis=1)

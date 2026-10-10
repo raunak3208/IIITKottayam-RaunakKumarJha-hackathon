@@ -1,24 +1,31 @@
-import { useCallback, useEffect, useState } from 'react';
-import { get } from './http.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function usePolling(path, intervalMs) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const pathRef = useRef(path);
+  pathRef.current = path;
 
   const load = useCallback(async () => {
     try {
-      setData(await get(path));
+      const res = await fetch(pathRef.current);
+      if (!res.ok) throw new Error(`${res.status}`);
+      setData(await res.json());
       setError('');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [path]);
+  }, []);
 
   useEffect(() => {
+    setLoading(true);
     load();
-    const timer = setInterval(load, intervalMs);
-    return () => clearInterval(timer);
-  }, [load, intervalMs]);
+    const t = setInterval(load, intervalMs);
+    return () => clearInterval(t);
+  }, [load, intervalMs, path]);
 
-  return { data, error, reload: load };
+  return { data, error, loading, reload: load };
 }

@@ -18,7 +18,8 @@ def _now():
 
 
 class JobRunner:
-    def __init__(self, on_success=None, commands=None):
+    def __init__(self, engine=None, on_success=None, commands=None):
+        self.engine = engine
         self.commands = commands or COMMANDS
         self.on_success = on_success
         self.lock = threading.Lock()
@@ -47,17 +48,39 @@ class JobRunner:
     def _run(self, name):
         job = self.jobs[name]
         try:
-            process = subprocess.Popen(
-                self.commands[name],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                cwd=os.getcwd(),
-            )
-            for line in process.stdout:
-                job["lines"].append(line.rstrip())
-            code = process.wait()
+            if name == "evaluate" and self.engine is not None:
+                import io
+                import sys
+                import eval.run_all
+
+                class CaptureLog:
+                    def write(self, s):
+                        for line in s.splitlines():
+                            if line.strip():
+                                job["lines"].append(line.strip())
+                    def flush(self):
+                        pass
+
+                cap = CaptureLog()
+                old_stdout = sys.stdout
+                sys.stdout = cap
+                try:
+                    eval.run_all.main(self.engine)
+                finally:
+                    sys.stdout = old_stdout
+                code = 0
+            else:
+                process = subprocess.Popen(
+                    self.commands[name],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    cwd=os.getcwd(),
+                )
+                for line in process.stdout:
+                    job["lines"].append(line.rstrip())
+                code = process.wait()
         except Exception as err:
             job["lines"].append(str(err))
             code = -1

@@ -1,0 +1,289 @@
+{
+  "sentiment_phrasebank": {
+    "dataset": "phrasebank",
+    "n_test": 1585,
+    "macro_f1": 0.9635,
+    "macro_f1_ci": [
+      0.952,
+      0.9739
+    ],
+    "accuracy": 0.9735,
+    "ece_before": 0.058,
+    "ece_after": 0.0067,
+    "temperature": 0.6,
+    "reliability_before": [
+      {
+        "confidence": 0.479,
+        "accuracy": 0.0,
+        "n": 4
+      },
+      {
+        "confidence": 0.534,
+        "accuracy": 0.643,
+        "n": 14
+      },
+      {
+        "confidence": 0.658,
+        "accuracy": 0.7,
+        "n": 30
+      },
+      {
+        "confidence": 0.762,
+        "accuracy": 0.857,
+        "n": 56
+      },
+      {
+        "confidence": 0.86,
+        "accuracy": 0.981,
+        "n": 211
+      },
+      {
+        "confidence": 0.946,
+        "accuracy": 0.991,
+        "n": 1270
+      }
+    ],
+    "reliability_after": [
+      {
+        "confidence": 0.493,
+        "accuracy": 0.0,
+        "n": 2
+      },
+      {
+        "confidence": 0.539,
+        "accuracy": 0.5,
+        "n": 12
+      },
+      {
+        "confidence": 0.654,
+        "accuracy": 0.6,
+        "n": 5
+      },
+      {
+        "confidence": 0.753,
+        "accuracy": 0.783,
+        "n": 23
+      },
+      {
+        "confidence": 0.858,
+        "accuracy": 0.718,
+        "n": 39
+      },
+      {
+        "confidence": 0.988,
+        "accuracy": 0.989,
+        "n": 1504
+      }
+    ],
+    "note": "FinBERT was fine-tuned on this dataset, so the score is optimistic"
+  },
+  "event": {
+    "n_test": 1,
+    "zero_shot": {
+      "macro_f1": 0.0,
+      "macro_f1_ci": [
+        0.0,
+        0.0
+      ],
+      "accuracy": 0.0,
+      "labels": [
+        "Macroeconomic",
+        "Other"
+      ],
+      "confusion": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    }
+  },
+  "cache": {
+    "pairs": 14,
+    "sweep": [
+      {
+        "threshold": 0.8,
+        "similarity_only": {
+          "hit_rate": 1.0,
+          "false_hit_rate": 1.0
+        },
+        "with_scope": {
+          "hit_rate": 1.0,
+          "false_hit_rate": 0.889
+        },
+        "with_scope_and_guard": {
+          "hit_rate": 1.0,
+          "false_hit_rate": 0.0
+        }
+      },
+      {
+        "threshold": 0.85,
+        "similarity_only": {
+          "hit_rate": 1.0,
+          "false_hit_rate": 0.444
+        },
+        "with_scope": {
+          "hit_rate": 1.0,
+          "false_hit_rate": 0.444
+        },
+        "with_scope_and_guard": {
+          "hit_rate": 1.0,
+          "false_hit_rate": 0.0
+        }
+      },
+      {
+        "threshold": 0.9,
+        "similarity_only": {
+          "hit_rate": 0.6,
+          "false_hit_rate": 0.0
+        },
+        "with_scope": {
+          "hit_rate": 0.6,
+          "false_hit_rate": 0.0
+        },
+        "with_scope_and_guard": {
+          "hit_rate": 0.6,
+          "false_hit_rate": 0.0
+        }
+      },
+      {
+        "threshold": 0.92,
+        "similarity_only": {
+          "hit_rate": 0.6,
+          "false_hit_rate": 0.0
+        },
+        "with_scope": {
+          "hit_rate": 0.6,
+          "false_hit_rate": 0.0
+        },
+        "with_scope_and_guard": {
+          "hit_rate": 0.6,
+          "false_hit_rate": 0.0
+        }
+      },
+      {
+        "threshold": 0.95,
+        "similarity_only": {
+          "hit_rate": 0.0,
+          "false_hit_rate": 0.0
+        },
+        "with_scope": {
+          "hit_rate": 0.0,
+          "false_hit_rate": 0.0
+        },
+        "with_scope_and_guard": {
+          "hit_rate": 0.0,
+          "false_hit_rate": 0.0
+        }
+      }
+    ]
+  },
+  "embeddings": {
+    "pairs": 14,
+    "bge-small-en-v1.5": {
+      "auc": 0.978,
+      "mean_same": 0.92,
+      "mean_different": 0.85
+    },
+    "all-MiniLM-L6-v2": {
+      "auc": 0.356,
+      "mean_same": 0.827,
+      "mean_different": 0.882
+    }
+  },
+  "ablation": {
+    "n_test": 1,
+    "modes": {
+      "tier1_only": {
+        "event_macro_f1": 0.0,
+        "event_macro_f1_ci": [
+          0.0,
+          0.0
+        ],
+        "sentiment_accuracy": 0.0,
+        "mean_ms": 8279.5,
+        "p95_ms": 8279.5,
+        "escalation_rate": 0.0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "cost_per_item_usd": 0.0
+      },
+      "llm_only": {
+        "event_macro_f1": 1.0,
+        "event_macro_f1_ci": [
+          1.0,
+          1.0
+        ],
+        "sentiment_accuracy": 0.0,
+        "mean_ms": 6000.1,
+        "p95_ms": 6000.1,
+        "escalation_rate": 1.0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "cost_per_item_usd": 0.0
+      },
+      "cascade": {
+        "event_macro_f1": 0.0,
+        "event_macro_f1_ci": [
+          0.0,
+          0.0
+        ],
+        "sentiment_accuracy": 0.0,
+        "mean_ms": 11702.3,
+        "p95_ms": 11702.3,
+        "escalation_rate": 1.0,
+        "llm_calls": 0,
+        "tokens": 0,
+        "cost_per_item_usd": 0.0
+      }
+    }
+  },
+  "adversarial": {
+    "kinds": {
+      "injection": {
+        "passed": 19,
+        "total": 19,
+        "rate": 1.0
+      },
+      "flip": {
+        "passed": 12,
+        "total": 12,
+        "rate": 1.0
+      },
+      "quote": {
+        "passed": 8,
+        "total": 8,
+        "rate": 1.0
+      },
+      "parse": {
+        "passed": 9,
+        "total": 9,
+        "rate": 1.0
+      },
+      "pipeline": {
+        "passed": 1,
+        "total": 10,
+        "rate": 0.1
+      }
+    },
+    "passed": 49,
+    "total": 58,
+    "pass_rate": 0.845,
+    "failed": [
+      "adv49",
+      "adv51",
+      "adv52",
+      "adv53",
+      "adv54",
+      "adv55",
+      "adv56",
+      "adv57",
+      "adv58"
+    ],
+    "skipped": 0
+  }
+}

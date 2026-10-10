@@ -1,0 +1,14 @@
+{"a": "Apple unveils new iPhone lineup at annual event", "b": "Apple announces new iPhone models at its yearly event", "tickers_a": ["AAPL"], "tickers_b": ["AAPL"], "same": true}
+{"a": "JPMorgan beats quarterly profit estimates on trading revenue", "b": "JPMorgan tops analyst profit forecasts for the quarter as trading revenue rises", "tickers_a": ["JPM"], "tickers_b": ["JPM"], "same": true}
+{"a": "Tesla recalls 200,000 vehicles over software fault", "b": "Tesla issues recall of 200,000 cars due to a software problem", "tickers_a": ["TSLA"], "tickers_b": ["TSLA"], "same": true}
+{"a": "Fed holds interest rates steady at 5.25%", "b": "Federal Reserve leaves rates unchanged at 5.25%", "tickers_a": [], "tickers_b": [], "same": true}
+{"a": "Boeing receives order for 100 aircraft from airline", "b": "Airline orders 100 Boeing aircraft", "tickers_a": ["BA"], "tickers_b": ["BA"], "same": true}
+{"a": "Apple acquires AI startup for $1 billion", "b": "Apple fails to acquire AI startup for $1 billion", "tickers_a": ["AAPL"], "tickers_b": ["AAPL"], "same": false}
+{"a": "Fed raises rates by 25 basis points", "b": "Fed raises rates by 50 basis points", "tickers_a": [], "tickers_b": [], "same": false}
+{"a": "Nvidia shares surge after earnings beat", "b": "Nvidia shares plunge after earnings beat", "tickers_a": ["NVDA"], "tickers_b": ["NVDA"], "same": false}
+{"a": "Amazon wins regulatory approval for deal", "b": "Amazon denied regulatory approval for deal", "tickers_a": ["AMZN"], "tickers_b": ["AMZN"], "same": false}
+{"a": "Microsoft shares rise on strong cloud growth", "b": "Microsoft shares fall on strong cloud growth", "tickers_a": ["MSFT"], "tickers_b": ["MSFT"], "same": false}
+{"a": "Exxon announces dividend increase", "b": "Chevron announces dividend increase", "tickers_a": ["XOM"], "tickers_b": ["CVX"], "same": false}
+{"a": "Pfizer trial meets primary goal", "b": "Pfizer trial fails to meet primary goal", "tickers_a": ["PFE"], "tickers_b": ["PFE"], "same": false}
+{"a": "Bank of America profit rises 10%", "b": "Bank of America profit rises 15%", "tickers_a": ["BAC"], "tickers_b": ["BAC"], "same": false}
+{"a": "Goldman Sachs raises full-year guidance", "b": "Goldman Sachs cuts full-year guidance", "tickers_a": ["GS"], "tickers_b": ["GS"], "same": false}

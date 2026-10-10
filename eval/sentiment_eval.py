@@ -19,7 +19,7 @@ def load_phrasebank():
 def load_fiqa():
     from datasets import load_dataset
 
-    data = load_dataset("TheFinAI/fiqa-sentiment-classification", split="train")
+    data = load_dataset("TheFinAI/fiqa-sentiment-classification", split="train", trust_remote_code=True)
     texts, labels = [], []
     for row in data:
         score = row.get("sentiment_score", row.get("score"))

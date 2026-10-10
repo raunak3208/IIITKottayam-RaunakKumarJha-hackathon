@@ -1,0 +1,32 @@
+<!doctype html><meta charset='utf-8'><title>RiskPulse results</title>
+<style>body{font:15px system-ui,sans-serif;max-width:1000px;margin:24px auto;padding:0 16px;color:#14213d}table{border-collapse:collapse;width:100%;margin:8px 0 28px}th,td{padding:6px 10px;border-bottom:1px solid #d6dce4;text-align:left}th{color:#5b677a;font-weight:500}h1{font-size:1.5rem}h2{font-size:1.05rem;margin:24px 0 0}</style>
+<h1>RiskPulse results</h1>
+<h2>Sentiment and calibration</h2><table><tr><th>Dataset</th><th>Macro-F1 (95% CI)</th><th>Accuracy</th><th>ECE before</th><th>ECE after</th><th>Temperature</th><th>Note</th></tr>
+<tr><td>phrasebank</td><td>0.964 (0.952 to 0.974)</td><td>0.974</td><td>0.058</td><td>0.007</td><td>0.60</td><td>FinBERT was fine-tuned on this dataset, so the score is optimistic</td></tr>
+</table>
+<p>Reliability diagram, phrasebank</p><svg viewBox="-30 -10 300 310" width="320" role="img" aria-label="Reliability diagram"><line x1="0" y1="260" x2="260" y2="0" stroke="#999" stroke-dasharray="4"/><polyline points="124.5,260.0 138.8,92.8 171.1,78.0 198.1,37.2 223.6,4.9 246.0,2.3" fill="none" stroke="#b3261e" stroke-width="2"/><polyline points="128.2,260.0 140.1,130.0 170.0,104.0 195.8,56.4 223.1,73.3 256.9,2.9" fill="none" stroke="#2457c5" stroke-width="2"/><text x="0" y="278" font-size="11">confidence</text><text x="-26" y="12" font-size="11">accuracy</text><text x="0" y="294" font-size="11" fill="#b3261e">before calibration</text><text x="120" y="294" font-size="11" fill="#2457c5">after calibration</text></svg>
+<h2>Event classification (time-based split)</h2><table><tr><th>Model</th><th>Macro-F1 (95% CI)</th><th>Accuracy</th><th>Test items</th></tr>
+<tr><td>zero_shot</td><td>0.000 (0.000 to 0.000)</td><td>0.000</td><td>1</td></tr>
+</table>
+<h2>Cascade ablation</h2><table><tr><th>Configuration</th><th>Event macro-F1 (95% CI)</th><th>Sentiment accuracy</th><th>Mean ms</th><th>p95 ms</th><th>Escalated</th><th>LLM calls</th><th>Tokens</th><th>Cost per item (USD)</th></tr>
+<tr><td>tier1_only</td><td>0.000 (0.000 to 0.000)</td><td>0.000</td><td>8280</td><td>8280</td><td>0.00</td><td>0</td><td>0</td><td>0.00000</td></tr>
+<tr><td>llm_only</td><td>1.000 (1.000 to 1.000)</td><td>0.000</td><td>6000</td><td>6000</td><td>1.00</td><td>0</td><td>0</td><td>0.00000</td></tr>
+<tr><td>cascade</td><td>0.000 (0.000 to 0.000)</td><td>0.000</td><td>11702</td><td>11702</td><td>1.00</td><td>0</td><td>0</td><td>0.00000</td></tr>
+</table>
+<h2>Semantic cache at threshold 0.92</h2><table><tr><th>Variant</th><th>Hit rate on true duplicates</th><th>False-hit rate on flipped meaning</th></tr>
+<tr><td>similarity only</td><td>0.60</td><td>0.00</td></tr>
+<tr><td>with scope</td><td>0.60</td><td>0.00</td></tr>
+<tr><td>with scope and guard</td><td>0.60</td><td>0.00</td></tr>
+</table>
+<h2>Embedding models on tricky pairs</h2><table><tr><th>Model</th><th>AUC</th><th>Mean similarity, same</th><th>Mean similarity, different</th></tr>
+<tr><td>bge-small-en-v1.5</td><td>0.978</td><td>0.920</td><td>0.850</td></tr>
+<tr><td>all-MiniLM-L6-v2</td><td>0.356</td><td>0.827</td><td>0.882</td></tr>
+</table>
+<h2>Adversarial suite</h2><table><tr><th>Attack type</th><th>Passed</th><th>Pass rate</th></tr>
+<tr><td>injection</td><td>19 of 19</td><td>1.00</td></tr>
+<tr><td>flip</td><td>12 of 12</td><td>1.00</td></tr>
+<tr><td>quote</td><td>8 of 8</td><td>1.00</td></tr>
+<tr><td>parse</td><td>9 of 9</td><td>1.00</td></tr>
+<tr><td>pipeline</td><td>1 of 10</td><td>0.10</td></tr>
+<tr><td>all</td><td>49 of 58</td><td>0.84</td></tr>
+</table>

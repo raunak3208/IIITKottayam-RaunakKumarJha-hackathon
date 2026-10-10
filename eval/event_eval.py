@@ -23,7 +23,7 @@ def report(y_true, y_pred):
     }
 
 
-def run():
+def run(engine=None):
     path = Path(config.GOLD_PATH)
     if not path.exists():
         print(f"event eval skipped: {path} not found")
@@ -34,12 +34,18 @@ def run():
     texts = [r["text"] for r in test]
     y = np.array([r["event_type"] for r in test])
 
+    if engine:
+        embedder = engine.embedder
+        zero_shot = engine.classifier.zero_shot
+    else:
+        embedder = Embedder(config.EMBEDDING_MODEL)
+        zero_shot = ZeroShotClassifier(config.EVENT_MODEL)
+
     result = {"n_test": len(test)}
     head_path = Path(config.ARTIFACTS_DIR) / HEAD_FILE
     if head_path.exists():
-        vectors = Embedder(config.EMBEDDING_MODEL).encode_many(texts)
+        vectors = embedder.encode_many(texts)
         result["embedding_head"] = report(y, joblib.load(head_path).predict(vectors))
 
-    zero_shot = ZeroShotClassifier(config.EVENT_MODEL)
     result["zero_shot"] = report(y, np.array([zero_shot.classify(t)[0] for t in texts]))
     return result

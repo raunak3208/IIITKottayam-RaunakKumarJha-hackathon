@@ -83,18 +83,21 @@ class SemanticCache:
         query = (
             Query(f"(@scope:{{{scope}}})=>[KNN 3 @embedding $vec AS dist]")
             .sort_by("dist")
-            .return_fields("dist", "text", "payload")
+            .return_fields("dist", "text", "result")
             .dialect(2)
         )
-        result = self.client.ft(INDEX).search(query, query_params={"vec": embedding.tobytes()})
-        for doc in result.docs:
+        search_result = self.client.ft(INDEX).search(query, query_params={"vec": embedding.tobytes()})
+        for doc in search_result.docs:
             similarity = 1 - float(_text(doc.dist))
             if similarity < self.threshold:
                 break
             if meaning_flip(text, _text(doc.text)):
                 self.on_flip()
                 continue
-            return json.loads(_text(doc.payload)), similarity
+            raw_res = getattr(doc, "result", None)
+            if not raw_res:
+                continue
+            return json.loads(_text(raw_res)), similarity
         return None, None
 
     def store(self, embedding, tickers, text, payload):
@@ -106,7 +109,7 @@ class SemanticCache:
                 "scope": scope,
                 "text": text[:1500],
                 "embedding": embedding.tobytes(),
-                "payload": json.dumps(payload),
+                "result": json.dumps(payload),
             },
         )
         self.client.expire(key, self.ttl)

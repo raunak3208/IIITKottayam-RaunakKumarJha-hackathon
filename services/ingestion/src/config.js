@@ -14,7 +14,9 @@ export const config = {
     'https://www.cnbc.com/id/100003114/device/rss/rss.html',
     'https://www.cnbc.com/id/10000664/device/rss/rss.html',
     'https://feeds.content.dowjones.io/public/rss/mw_topstories',
-    'https://finance.yahoo.com/news/rssindex',
+    'https://www.cnbc.com/id/20910258/device/rss/rss.html',
+    'https://feeds.bbci.co.uk/news/business/rss.xml',
+    'https://www.theguardian.com/business/rss',
   ]),
   reddit: {
     clientId: process.env.REDDIT_CLIENT_ID ?? '',

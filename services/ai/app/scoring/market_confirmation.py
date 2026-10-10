@@ -46,11 +46,30 @@ class MarketConfirmation:
 
     def _fetch(self, ticker):
         try:
-            import yfinance as yf
+            import requests
 
-            history = yf.Ticker(ticker.replace(".", "-")).history(period="4mo", interval="1d")
-            history = history.dropna(subset=["Close", "Volume"])
-            return compute_stats(history["Close"].tolist(), history["Volume"].tolist())
+            symbol = ticker.replace(".", "-")
+            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?range=4mo&interval=1d"
+            res = requests.get(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+                timeout=5,
+            )
+            if res.status_code != 200:
+                return None
+            data = res.json()
+            results = data.get("chart", {}).get("result")
+            if not results:
+                return None
+            quote = results[0].get("indicators", {}).get("quote", [{}])[0]
+            raw_closes = quote.get("close", [])
+            raw_volumes = quote.get("volume", [])
+            closes, volumes = [], []
+            for c, v in zip(raw_closes, raw_volumes):
+                if c is not None and v is not None:
+                    closes.append(float(c))
+                    volumes.append(float(v))
+            return compute_stats(closes, volumes)
         except Exception:
             return None
 
@@ -60,7 +79,7 @@ class MarketConfirmation:
         if cached is not None:
             return json.loads(cached)
         stats = self._fetch(ticker)
-        ttl = config.MARKET_CACHE_TTL_SEC if stats else 60
+        ttl = config.MARKET_CACHE_TTL_SEC if stats else 300
         self.client.set(key, json.dumps(stats), ex=ttl)
         return stats
 

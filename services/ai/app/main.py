@@ -16,7 +16,7 @@ from app.pipeline import consumer
 from app.pipeline.analyze import Engine
 
 engine = Engine()
-runner = JobRunner(on_success=lambda name: engine.reload_artifacts() if engine.ready else None)
+runner = JobRunner(engine=engine, on_success=lambda name: engine.reload_artifacts() if engine.ready else None)
 client = redis.Redis.from_url(config.REDIS_URL)
 
 
