@@ -1,7 +1,7 @@
 # RiskPulse: Institutional Real-Time Risk Intelligence & Portfolio Stress Engine - S&P Global & Crisil Campus Hackathon
 
 **Candidate Name:** Raunak Kumar Jha  
-**College Email ID:** [raunak.jha@iiitkottayam.ac.in]  
+**College Email ID:** [raunakjha24bcy27@iiitkottayam.ac.in]  
 **College / Campus:** Indian Institute of Information Technology, Kottayam (IIIT Kottayam)  
 **Demo Video Link:** [https://youtu.be/your-demo-video-link]  
 **Slide Deck Link (if hosted externally):** [https://docs.google.com/presentation/d/your-slide-deck-link]  
@@ -14,7 +14,7 @@ In modern financial markets, critical systemic risk signals emerge first across 
 
 **RiskPulse** solves this challenge by engineering an enterprise-grade, event-driven **AI/NLP Risk Engine** coupled with downstream quantitative portfolio analytics. Our architecture continuously ingests text from multiple independent feeds (Bloomberg/Reuters RSS wires, SEC EDGAR 8-K filings, and Reddit financial discussions), passing them through token-bucket rate limiters and SHA-256 deduplication filters into an asynchronous Redis 7 stream. The NLP pipeline performs on-device financial sentiment inference via **ProsusAI/FinBERT** ($[-1.0, +1.0]$), 14-class risk event categorization with temperature-scaled Expected Calibration Error (ECE), and severity impact prediction ($1.0$ to $10.0$) anchored to historical crisis price reactions. An HNSW vector semantic cache in Redis delivers sub-8ms responses, while PostgreSQL `pgvector` clusters multi-source articles into corroborated Event Dossiers, filtering unverified rumors.
 
-Crucially, RiskPulse bridges qualitative NLP intelligence directly to balance-sheet capital solvency. When high-impact events are detected ($\text{Impact} \ge 7.0, \text{Confidence} \ge 60\%$), the gateway automatically triggers **Downstream Module B: Strategic Wholesale Banking Portfolio Stress Testing**. The quantitative engine executes 2,000-path Monte Carlo simulations across a **\$432 Million multi-asset wholesale banking book** (commercial loans, fixed income bonds, equities, and derivatives), outputting Before/After valuations, factor sensitivities (DV01, CS01, Beta), and Reverse Stress Testing. Furthermore, our **ARIA Multi-Agent Research Studio** coordinates 4 autonomous agents (Search, Reader, Writer, and Adversarial Critic) to audit primary regulatory footnotes and generate institutional intelligence memos verified with a strictly horizontal **9 / 10** critic score.
+Crucially, RiskPulse bridges qualitative NLP intelligence directly to balance-sheet capital solvency. When high-impact events are detected ($\text{Impact} \ge 7.0, \text{Confidence} \ge 60\%$), the gateway automatically triggers **Downstream Module B: Strategic Wholesale Banking Portfolio Stress Testing**. The quantitative engine executes 2,000-path Monte Carlo simulations across a **₹432 Million multi-asset wholesale banking book** (commercial loans, fixed income bonds, equities, and derivatives), outputting Before/After valuations, factor sensitivities (DV01, CS01, Beta), and Reverse Stress Testing. Furthermore, our **ARIA Multi-Agent Research Studio** coordinates 4 autonomous agents (Search, Reader, Writer, and Adversarial Critic) to audit primary regulatory footnotes and generate institutional intelligence memos verified with a strictly horizontal **9 / 10** critic score.
 
 ---
 
@@ -83,7 +83,7 @@ flowchart TB
     IMPACT --> GW_CORE
 
     subgraph QUANT["6. Quantitative Stress Engine (Module B)"]
-        PORTFOLIO[("$432M Wholesale Bank Book<br/>Loans, Bonds, Equities, Derivs")]
+        PORTFOLIO[("₹432M Wholesale Bank Book<br/>Loans, Bonds, Equities, Derivs")]
         MC_SIM["Monte Carlo Engine<br/>2,000 Correlated Factor Paths"]
         REVERSE["Reverse Stress Solver<br/>Back-solves 10% Capital Breach"]
         
@@ -126,7 +126,7 @@ flowchart TB
 | **Vector Embeddings** | `sentence-transformers` (`all-MiniLM-L6-v2`) | 384-dimensional dense semantic text representations. |
 | **Semantic Caching** | RediSearch Vector Similarity Search (HNSW) | Sub-8ms semantic cache lookup with cosine distance threshold $\le 0.12$. |
 | **Event Classification** | Calibrated Logistic / Zero-Shot Head | 14-class risk taxonomy with temperature-scaled logit calibration (Low ECE). |
-| **Quant Engine (Module B)**| NumPy, Pandas, SciPy, FastAPI | \$432M portfolio stress testing, 2,000-path Monte Carlo simulations, reverse stress optimization. |
+| **Quant Engine (Module B)**| NumPy, Pandas, SciPy, FastAPI | ₹432M portfolio stress testing, 2,000-path Monte Carlo simulations, reverse stress optimization. |
 | **Relational & Vector DB** | PostgreSQL 16 + `pgvector` | Permanent system of record, HNSW spatial indexing for multi-source event clustering. |
 | **Streaming Queue & Pub/Sub** | Redis 7 Stack | Ingestion stream buffer (`raw:stream`), consumer groups, and real-time SSE push channels. |
 | **Gateway & Orchestration**| Node.js 20 LTS, Express, Server-Sent Events | Central API gateway, automated stress trigger policy, scenario cooldowns. |
@@ -143,11 +143,11 @@ flowchart TB
 2. **Social Media Market Chatter (Live & Public)**:
    - Reddit financial communities (`r/wallstreetbets`, `r/investing`, `r/StockMarket`) accessed via authenticated OAuth2 connectors with token-bucket rate limiting.
 3. **Synthetic Wholesale Banking Portfolio (`data/portfolio/positions.csv`)**:
-   - A representative **\$432 Million Wholesale Banking Portfolio** comprising 22 distinct institutional positions:
-     - **Commercial Loans (\$213M)**: Term loans, revolving credit facilities, and syndicated debt across Industrials, Energy, Technology, and Consumer sectors (parameterized by Duration, PD, and LGD).
-     - **Fixed Income Bonds (\$153M)**: 10Y US Treasuries, 5Y German Bunds, and Investment Grade / High Yield Corporate Bonds (parameterized by Modified Duration and Convexity).
-     - **Equities (\$61M)**: Large-cap constituent exposures (AAPL, JPM, NVDA, XOM, WMT, JNJ) mapped from the S&P 100 universe (parameterized by market Beta $\beta$).
-     - **Derivatives (\$5.6M)**: S&P 500 Index Puts/Calls and single-stock option hedges (parameterized by Notional, Delta $\Delta$, and Gamma $\Gamma$).
+   - A representative **₹432 Million Wholesale Banking Portfolio** comprising 22 distinct institutional positions:
+     - **Commercial Loans (₹213M)**: Term loans, revolving credit facilities, and syndicated debt across Industrials, Energy, Technology, and Consumer sectors (parameterized by Duration, PD, and LGD).
+     - **Fixed Income Bonds (₹153M)**: 10Y US Treasuries, 5Y German Bunds, and Investment Grade / High Yield Corporate Bonds (parameterized by Modified Duration and Convexity).
+     - **Equities (₹61M)**: Large-cap constituent exposures (AAPL, JPM, NVDA, XOM, WMT, JNJ) mapped from the S&P 100 universe (parameterized by market Beta $\beta$).
+     - **Derivatives (₹5.6M)**: S&P 500 Index Puts/Calls and single-stock option hedges (parameterized by Notional, Delta $\Delta$, and Gamma $\Gamma$).
 4. **Historical Precedents & Analog Index (`data/analogs/historical_events.jsonl`)**:
    - 10+ years of documented macroeconomic shocks (e.g., 2023 Silicon Valley Bank run, June 2022 Fed QT pivot, December 2018 rate tantrum) with quantified historical next-day index price drawdowns.
 5. **Evaluation Benchmark Gold Sets (`data/gold/`)**:
@@ -227,7 +227,7 @@ cd apps/dashboard && npm install && npm run dev
 
 1. **Sub-380ms Ingestion-to-Signal Pipeline**: Transforms unstructured multi-feed text into contract-validated risk payloads in under $380\text{ms}$ ($<8\text{ms}$ on vector cache hits).
 2. **Corroborated Event Clustering**: Groups fragmented articles into unified Event Dossiers using `pgvector` cosine similarity, displaying extracted claims alongside counter-evidence.
-3. **Automated Wholesale Banking Stress Testing (Module B)**: Automatically shocks a **\$432M multi-asset book** upon detecting events with $\text{Impact} \ge 7.0$, producing Before vs After PnL ($-\$42.8\text{M}$ drawdown), asset-class loss breakdowns, Tornado sensitivity charts, and Reverse Stress optimization.
+3. **Automated Wholesale Banking Stress Testing (Module B)**: Automatically shocks a **₹432M multi-asset book** upon detecting events with $\text{Impact} \ge 7.0$, producing Before vs After PnL ($-₹42.8\text{M}$ drawdown), asset-class loss breakdowns, Tornado sensitivity charts, and Reverse Stress optimization.
 4. **ARIA Autonomous Multi-Agent Research Studio**: Orchestrates a 4-agent state machine (Search $\to$ Read $\to$ Write $\to$ Adversarial Critic) that validates empirical footnotes with a strictly horizontal **9 / 10** verification score.
 5. **Deterministic Time-Travel Replay Engine**: Records real-time streams and replays market crises at $1\times$ to $100\times$ speed for repeatable demonstrations and regression backtesting.
 6. **Human-in-the-Loop Active Learning**: Routes ambiguous signals to an analyst review queue, automatically expanding gold-set datasets for continuous model retraining.

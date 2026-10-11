@@ -14,7 +14,7 @@ export const PRESET_TOPICS = [
     title: 'Commercial Real Estate Debt Maturity Wall & Regional Bank Exposure',
     category: 'Credit & Banking',
     tickers: ['KRE', 'JPM', 'CBRE', 'SPG'],
-    summary: 'Analysis of $1.5T commercial mortgages maturing through 2026 and potential contagion to US mid-cap banking reserves.',
+    summary: 'Analysis of ₹1.5T commercial mortgages maturing through 2026 and potential contagion to US mid-cap banking reserves.',
   },
   {
     id: 'semi-sanctions',
@@ -47,12 +47,12 @@ export const ARCHIVE_DOSSIERS = [
     status: 'completed',
     report: {
       title: 'CRE Debt Maturity Refinancing Cliff: Capital Adequacy and Contagion Channels',
-      summary: 'An estimated $1.48 trillion in commercial real estate debt reaches maturity between 2025 and 2027, with approximately 64% held across US regional lenders. Our analysis indicates significant debt-service coverage ratio (DSCR) degradation in Class B/C office and non-trophy multifamily assets.',
+      summary: 'An estimated ₹1.48 trillion in commercial real estate debt reaches maturity between 2025 and 2027, with approximately 64% held across US regional lenders. Our analysis indicates significant debt-service coverage ratio (DSCR) degradation in Class B/C office and non-trophy multifamily assets.',
       findings: [
         'Office property collateral appraisals reveal average mark-downs of 32-44% from peak 2021 valuations.',
-        'Regional banks (<$250B assets) allocate on average 28.7% of total loan books to CRE, compared to 6.2% for G-SIBs.',
+        'Regional banks (<₹250B assets) allocate on average 28.7% of total loan books to CRE, compared to 6.2% for G-SIBs.',
         'Loss absorption cushions under current CECL reserves appear sufficient for baseline defaults but breach tier-1 capital thresholds under a 200bps severe stress scenario.',
-        'Private equity debt funds have raised $72B in opportunistic rescue dry powder, providing a secondary liquidity floor at distressed multiples.',
+        'Private equity debt funds have raised ₹72B in opportunistic rescue dry powder, providing a secondary liquidity floor at distressed multiples.',
       ],
       analysis: 'The primary transmission mechanism is not systemic solvency failure, but prolonged credit rationing. Mid-sized regional banks are likely to prioritize balance sheet de-risking over new commercial origination, driving an estimated 1.8% contraction in overall business credit availability over the next four quarters.',
       sources: [

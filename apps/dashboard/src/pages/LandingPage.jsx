@@ -28,10 +28,10 @@ const SCENARIOS = [
     quote: 'FOMC meeting minutes signal accelerated balance sheet runoff and restrictive liquidity persistence, prompting immediate upward yield pressure.',
     source: 'Federal Reserve Board & Bloomberg Wire',
     analog: 'June 2022 QT Pivot (-3.8% next-day reaction)',
-    shockLoss: '-$5,620,000',
+    shockLoss: '-₹5,620,000',
     shockPct: '-5.62%',
-    postValue: '$94.38M',
-    var95: '-$6.24M',
+    postValue: '₹94.38M',
+    var95: '-₹6.24M',
     contagion: 'Banks & Rate-Sensitive Equities',
   },
   {
@@ -48,10 +48,10 @@ const SCENARIOS = [
     quote: 'Regulatory restrictions on dual-use extreme ultraviolet sub-assemblies introduce multi-quarter lead time delays across advanced packaging.',
     source: 'BIS Trade Directive & Reuters Tech Wire',
     analog: 'Oct 2022 Export Controls (-4.1% semiconductor reaction)',
-    shockLoss: '-$4,810,000',
+    shockLoss: '-₹4,810,000',
     shockPct: '-4.81%',
-    postValue: '$95.19M',
-    var95: '-$5.35M',
+    postValue: '₹95.19M',
+    var95: '-₹5.35M',
     contagion: 'Cloud Infrastructure & Hardware',
   },
   {
@@ -68,10 +68,10 @@ const SCENARIOS = [
     quote: 'Special servicing rates on Tier-2 metropolitan office debt hit 10-year peaks as refinancing hurdles trigger loan maturity extensions.',
     source: 'Trepp CMBS Bulletin & WSJ Banking',
     analog: 'March 2023 Regional Bank Stress (-5.2% KRE reaction)',
-    shockLoss: '-$3,920,000',
+    shockLoss: '-₹3,920,000',
     shockPct: '-3.92%',
-    postValue: '$96.08M',
-    var95: '-$4.65M',
+    postValue: '₹96.08M',
+    var95: '-₹4.65M',
     contagion: 'Mid-Cap Financials & REITs',
   },
 ];
@@ -160,14 +160,14 @@ const WORKFLOW_STAGES = [
       source: 'Institutional Risk Model',
       headline: 'Simulated Macro Factor Shifts: Yields +25 bps, Tech Multiple -6%, Spreads +35 bps',
       snippet: 'Instantaneous multi-factor sensitivity propagation mapped across equities, fixed income, credit, and sector exposures.',
-      meta: 'Portfolio Baseline: $100.0M Multi-Asset Institutional Fund',
+      meta: 'Portfolio Baseline: ₹100.0M Multi-Asset Institutional Fund',
     },
     outputCard: {
       badge: 'Capital Impact & Contagion',
       title: 'VaR 95% & Sector Transmission',
       attributes: [
-        { label: 'Estimated Drawdown', value: '-$5,620,000 (-5.62%)', tone: 'neg' },
-        { label: '1-Day VaR (95%)', value: '-$6,240,000', tone: 'neg' },
+        { label: 'Estimated Drawdown', value: '-₹5,620,000 (-5.62%)', tone: 'neg' },
+        { label: '1-Day VaR (95%)', value: '-₹6,240,000', tone: 'neg' },
         { label: 'Epicenter Sector', value: 'Information Tech (0.74x)', tone: 'warn' },
         { label: 'Actionable Rebalancing', value: 'Duration & Tech Hedging', tone: 'pos' },
       ],
@@ -182,10 +182,10 @@ const STRESS_PRESETS = [
     id: 'fomc-shock',
     title: 'Fed Rate Shock (+100 bps)',
     summary: 'Aggressive policy tightening with sharp upward shift in terminal rate expectations.',
-    loss: '-$5,820,000',
+    loss: '-₹5,820,000',
     lossPct: '-5.82%',
-    postValue: '$94,180,000',
-    var95: '-$6,940,000',
+    postValue: '₹94,180,000',
+    var95: '-₹6,940,000',
     equities: -7.4,
     fixedIncome: -4.8,
     commodities: +2.1,
@@ -197,10 +197,10 @@ const STRESS_PRESETS = [
     id: 'tech-drawdown',
     title: 'Tech Multiple Contraction (-15%)',
     summary: 'Compressed growth multiples and reduced AI infrastructure capital expenditure spending.',
-    loss: '-$7,420,000',
+    loss: '-₹7,420,000',
     lossPct: '-7.42%',
-    postValue: '$92,580,000',
-    var95: '-$8,650,000',
+    postValue: '₹92,580,000',
+    var95: '-₹8,650,000',
     equities: -11.2,
     fixedIncome: +1.4,
     commodities: -3.2,
@@ -212,10 +212,10 @@ const STRESS_PRESETS = [
     id: 'energy-shock',
     title: 'Geopolitical Energy Spike (+30%)',
     summary: 'Critical maritime corridor disruption causing crude oil spike and freight surcharges.',
-    loss: '-$3,410,000',
+    loss: '-₹3,410,000',
     lossPct: '-3.41%',
-    postValue: '$96,590,000',
-    var95: '-$4,520,000',
+    postValue: '₹96,590,000',
+    var95: '-₹4,520,000',
     equities: -4.1,
     fixedIncome: -2.9,
     commodities: +12.4,
@@ -415,7 +415,7 @@ export default function LandingPage({ setPage }) {
                 <div className="preview-metric-box">
                   <span className="preview-metric-title">Simulated Shock</span>
                   <span className="preview-metric-value neg-text">{activeScenario.shockLoss}</span>
-                  <span className="preview-metric-sub">{activeScenario.shockPct} on $100M AUM</span>
+                  <span className="preview-metric-sub">{activeScenario.shockPct} on ₹100M AUM</span>
                 </div>
                 <div className="preview-metric-box">
                   <span className="preview-metric-title">1-Day VaR (95%)</span>
@@ -680,7 +680,7 @@ export default function LandingPage({ setPage }) {
                   </button>
                 ))}
               </div>
-              <span className="mono muted small">SIMULATED STRESS RUN · BASELINE AUM: $100.0M</span>
+              <span className="mono muted small">SIMULATED STRESS RUN · BASELINE AUM: ₹100.0M</span>
             </div>
 
             <div className="stress-results-grid">
@@ -788,7 +788,7 @@ export default function LandingPage({ setPage }) {
                     <span className="mono muted">Breakeven Solver</span>
                   </div>
                   <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-                    Target Drawdown: <strong>10.0% ($10M)</strong>. To breach this capital threshold, baseline rates would need to spike by <strong>+182 bps</strong> or tech sector multiples contract by <strong>-22.4%</strong> without hedging rebalancing.
+                    Target Drawdown: <strong>10.0% (₹10M)</strong>. To breach this capital threshold, baseline rates would need to spike by <strong>+182 bps</strong> or tech sector multiples contract by <strong>-22.4%</strong> without hedging rebalancing.
                   </p>
                 </div>
               </div>
