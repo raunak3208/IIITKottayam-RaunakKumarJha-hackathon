@@ -4,13 +4,13 @@
 **College Email ID:** [raunakjha24bcy27@iiitkottayam.ac.in]  
 **College / Campus:** Indian Institute of Information Technology, Kottayam (IIIT Kottayam)  
 **Demo Video Link:** [https://youtu.be/your-demo-video-link]  
-**Slide Deck Link (if hosted externally):** [https://docs.google.com/presentation/d/your-slide-deck-link]  
+**Slide Deck Link (if hosted externally):** [https://www.dropbox.com/scl/fi/asoe0v78z9qysniesb8ep/presentation.pdf?rlkey=i921lpgdscrc8ek6fa7e1hwag&st=qiavvuyc&dl=0](https://www.dropbox.com/scl/fi/asoe0v78z9qysniesb8ep/presentation.pdf?rlkey=i921lpgdscrc8ek6fa7e1hwag&st=qiavvuyc&dl=0)  
 
 ---
 
 ## 1. Project Overview / Problem Statement & Approach
 
-In modern financial markets, critical systemic risk signals emerge first across unstructured, decentralized channels — real-time news wires, regulatory SEC Form 8-K disclosures, and social financial communities — long before price discovery is reflected in equity order books. Tier-1 financial institutions struggle to ingest, sanitize, and calibrate these high-velocity qualitative streams into quantitative risk parameters in sub-second intervals. Existing legacy systems rely on rigid keyword heuristics that generate high false-alarm rates, while naive generative LLM wrappers suffer from hallucinations, high inference latency, and lack of mathematical grounding for portfolio risk management.
+In modern financial markets, critical systemic risk signals emerge first across unstructured, decentralized channels (including real-time news wires, regulatory SEC Form 8-K disclosures, and social financial communities) long before price discovery is reflected in equity order books. Tier-1 financial institutions struggle to ingest, sanitize, and calibrate these high-velocity qualitative streams into quantitative risk parameters in sub-second intervals. Existing legacy systems rely on rigid keyword heuristics that generate high false-alarm rates, while naive generative LLM wrappers suffer from hallucinations, high inference latency, and lack of mathematical grounding for portfolio risk management.
 
 **RiskPulse** solves this challenge by engineering an enterprise-grade, event-driven **AI/NLP Risk Engine** coupled with downstream quantitative portfolio analytics. Our architecture continuously ingests text from multiple independent feeds (Bloomberg/Reuters RSS wires, SEC EDGAR 8-K filings, and Reddit financial discussions), passing them through token-bucket rate limiters and SHA-256 deduplication filters into an asynchronous Redis 7 stream. The NLP pipeline performs on-device financial sentiment inference via **ProsusAI/FinBERT** ($[-1.0, +1.0]$), 14-class risk event categorization with temperature-scaled Expected Calibration Error (ECE), and severity impact prediction ($1.0$ to $10.0$) anchored to historical crisis price reactions. An HNSW vector semantic cache in Redis delivers sub-8ms responses, while PostgreSQL `pgvector` clusters multi-source articles into corroborated Event Dossiers, filtering unverified rumors.
 
@@ -23,6 +23,10 @@ Crucially, RiskPulse bridges qualitative NLP intelligence directly to balance-sh
 ### System Architecture
 
 ![RiskPulse System Architecture](docs/architecture.png)
+
+### End-to-End Data Flow
+
+![RiskPulse Data Flow Architecture](docs/DataFlow_Diagram.png)
 
 ### End-to-End Component Flow Diagram
 
